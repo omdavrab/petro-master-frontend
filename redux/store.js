@@ -1,19 +1,3 @@
-// import { createStore, applyMiddleware } from "redux";
-// import { composeWithDevTools } from "redux-devtools-extension";
-// import thunk from "redux-thunk";
-// import rootReducer from "./reducers/index";
-
-// const middleware = [thunk];
-// const intialstate = {};
-
-// const store = createStore(
-//   rootReducer,
-//   intialstate,
-//   composeWithDevTools(applyMiddleware(...middleware))
-// );
-
-// export default store;
-
 import { createStore, applyMiddleware, compose } from "redux";
 import reducer from "./reducers";
 import thunk from "redux-thunk";
@@ -23,7 +7,13 @@ const persistConfig = {
   key: "root",
   storage,
   whitelist: [
+    "SignUpStateData",
     "LogIn",
+    "Employee",
+    "Tank",
+    "Machine",
+    "Rate",
+    
     "GetMenu",
     "StoraSideBarData",
     "GetFoodCategoryByRestaurant",

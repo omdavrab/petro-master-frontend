@@ -1,5 +1,5 @@
 import { combineReducers } from "redux";
-import { UserlogIn, logIn, otpVerify, passwordForgot, signUp } from "./auth";
+import { UserlogIn, logIn, passwordForgot, signUp } from "./auth";
 import { Open } from "./loader";
 import {
   Restaurant,
@@ -20,10 +20,20 @@ import { CreateOrder, GetOrder } from "./order";
 import { TotalCount } from "./dashboard";
 import { Banner } from "./banner";
 import { Tax } from "./tax";
+import { SignUpStateData } from "./state";
+import { Employee } from "./employee";
+import { Tank } from "./tank";
+import { Machine } from "./machine";
+import { Rate } from "./rate";
 
 const reducer = combineReducers({
+  SignUpStateData: SignUpStateData,
   SignUp: signUp,
-  OtpVerify: otpVerify,
+  Employee : Employee,
+  Tank : Tank,
+  Machine : Machine,
+  Rate : Rate,
+  // OtpVerify: otpVerify,
   ForgotOtpVerify: passwordForgot,
   LogIn: logIn,
   UserLogIn: UserlogIn,
@@ -49,7 +59,7 @@ const reducer = combineReducers({
   TotalCount: TotalCount,
   RestaurantTrendingItem: RestaurantTrendingItem,
   Banner: Banner,
-  Tax: Tax
+  Tax: Tax,
 });
 
 export default reducer;

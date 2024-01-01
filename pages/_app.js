@@ -12,7 +12,6 @@ import { ThemeProvider } from "next-themes";
 import Loader from "@/components/admin/Loader";
 import Head from "next/head";
 import { useEffect, useState } from "react";
-import Notification from "../components/Notification";
 
 config.autoAddCss = false;
 export default function App({ Component, pageProps, initialTheme }) {
@@ -27,7 +26,7 @@ export default function App({ Component, pageProps, initialTheme }) {
     const stopLoading = () => {
       setTimeout(() => {
         setLoading(false);
-      }, 400);
+      }, 100);
     };
 
     // Subscribe to route change events to show/hide the loader
@@ -80,17 +79,15 @@ export default function App({ Component, pageProps, initialTheme }) {
       )}
       <ToastContainer style={{ zIndex: "99999" }} className="z-[999]" />
       <Provider store={store}>
-        <Notification />
         <Loader />
         {router.pathname === "/" ||
-        router.pathname === "/admin/onboarding/personaldetail" ||
+        router.pathname === "/admin/register/personaldetail" ||
         router.pathname === "/admin/login" ||
         router.pathname === "/admin/register" ||
         router.pathname === "/admin/forgotpassword/new_password" ||
         router.pathname === "/error_404" ||
         router.pathname === "/admin/forgotpassword" ||
         router.pathname === "/admin/resetpassword" ||
-        router.pathname === "/admin/verification" ||
         router.pathname === "/admin/register/verification" ||
         router.pathname === "/admin/restaurant-detail" ? (
           <Component {...pageProps} />

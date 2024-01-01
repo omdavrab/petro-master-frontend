@@ -4,6 +4,9 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
+import { HandleLogIn } from "@/redux/action/auth";
+import { CloseLoader, OpenLoader } from "@/redux/action/loader";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const dispatch = useDispatch();
@@ -18,7 +21,31 @@ export default function Login() {
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = async (values) => {};
+  const handleSubmit = async (values) => {
+    dispatch(OpenLoader(true));
+    await dispatch(HandleLogIn(values))
+      .then((result) => {
+        if (result?.payload?.status === 200) {
+          toast(result?.payload?.data.message, {
+            hideProgressBar: true,
+            autoClose: 3000,
+            type: "success",
+          });
+          router.push("/admin/dashboard");
+          dispatch(CloseLoader(false));
+        } else {
+          dispatch(CloseLoader(false));
+          toast(result?.payload?.data.message, {
+            hideProgressBar: true,
+            autoClose: 3000,
+            type: "error",
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err, "SignUP ERROR");
+      });
+  };
   return (
     <div className=" min-h-screen grid bg-white lg:grid-cols-2 lg:col-rows-1">
       <div className="hidden lg:flex items-center after:top-0 after:bottom-0  ">

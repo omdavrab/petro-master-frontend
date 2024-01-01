@@ -2,8 +2,8 @@ const initialState = {
   user: {},
   error: [],
   otp: {},
-  token:null,
-  forgotOtp:{}
+  token: null,
+  forgotOtp: {},
 };
 
 export const signUp = (state = initialState, action) => {
@@ -22,21 +22,21 @@ export const signUp = (state = initialState, action) => {
   }
 };
 
-export const otpVerify = (state = initialState, action) => {
-  switch (action.type) {
-    case "OTP_VERIFY":
-      return {
-        ...state,
-        otp: action.payload.data,
-      };
-    case "SET_LOADING":
-      return { ...state, error: action.payload };
+// export const otpVerify = (state = initialState, action) => {
+//   switch (action.type) {
+//     case "OTP_VERIFY":
+//       return {
+//         ...state,
+//         user: action.payload.data,
+//       };
+//     case "SET_LOADING":
+//       return { ...state, error: action.payload };
 
-    default:
-      return state;
-      break;
-  }
-};
+//     default:
+//       return state;
+//       break;
+//   }
+// };
 
 export const passwordForgot = (state = initialState, action) => {
   switch (action.type) {
@@ -61,10 +61,15 @@ export const logIn = (state = initialState, action) => {
         ...state,
         user: action.payload.data,
       };
-      case "SAVE_TOKEN":
+    case "SAVE_TOKEN":
       return {
         ...state,
         token: action.payload.data,
+      };
+    case "OTP_VERIFY":
+      return {
+        ...state,
+        user: action.payload.data,
       };
     case "SET_LOADING":
       return { ...state, error: action?.payload?.response };
@@ -82,7 +87,7 @@ export const UserlogIn = (state = initialState, action) => {
         ...state,
         user: action?.payload?.data?.user,
       };
-      case "SAVE_TOKEN":
+    case "SAVE_TOKEN":
       return {
         ...state,
         token: action.payload.data,

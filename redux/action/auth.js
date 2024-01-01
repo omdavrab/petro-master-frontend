@@ -29,6 +29,9 @@ export const HandleVerifyOTP = (data) => {
   return async (dispatch) => {
     try {
       const response = await axios.post(`${URL}/verify`, data);
+      localStorage.setItem("authorization", response.data.token);
+      Cookies.set('authorization', response.data.token);
+      tokenExpirationTime(response.data.token);
       return dispatch({
         type: "OTP_VERIFY",
         payload: response,

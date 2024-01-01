@@ -1,48 +1,100 @@
 import Link from "next/link";
 import React, { useState } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, ErrorMessage, useField } from "formik";
 import * as Yup from "yup";
 import { Fragment, useRouter } from "next/router";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { useDispatch, useSelector } from "react-redux";
+import { HandleSignUp } from "@/redux/action/auth";
+import { CloseLoader, OpenLoader } from "@/redux/action/loader";
+import { toast } from "react-toastify";
 
 export default function Personaldetail() {
   const dispatch = useDispatch();
+  const { data } = useSelector((state) => state.SignUpStateData);
   const [image, setImage] = useState();
   const router = useRouter();
   const initialValues = {
-    name: "",
     phone: "",
-    companyName: "",
-    website: "",
+    gstnumber: "",
+    vatnumber: "",
+    tinnumber: "",
+    udhyamnumber: "",
+    address: "",
   };
 
   const validationSchema = Yup.object({
-    name: Yup.string().required("Name is required!"),
     phone: Yup.string().required("Phone Number is required!").min(10),
-    companyName: Yup.string().required("Company Name is required!"),
-    website: Yup.string(),
+    gstnumber: Yup.string().required("GST Number is required!"),
+    vatnumber: Yup.string().required("Vat Number is required!"),
+    tinnumber: Yup.string().required("Tin Number is required!"),
+    udhyamnumber: Yup.string().required("Udhyam Number is required!"),
+    address: Yup.string().required("Address is required!"),
   });
-  const handleSubmit = async (values) => {
 
+  const handleBack = () => {
+    router.back();
+  };
+
+  const handleSubmit = async (values) => {
+    dispatch(OpenLoader(true));
+    const formData = new FormData();
+    formData.append("name", data.name);
+    formData.append("email", data.email);
+    formData.append("password", data.password);
+    formData.append("image", image);
+    formData.append("phone", values.phone);
+    formData.append("gstnumber", values.gstnumber);
+    formData.append("vatnumber", values.vatnumber);
+    formData.append("tinnumber", values.tinnumber);
+    formData.append("udhyamnumber", values.udhyamnumber);
+    formData.append("address", values.address);
+    await dispatch(HandleSignUp(formData))
+      .then((result) => {
+        if (result?.payload?.status === 200) {
+          toast(result?.payload?.data.message, {
+            hideProgressBar: true,
+            autoClose: 3000,
+            type: "success",
+          });
+          router.push("/admin/register/verification");
+          dispatch(CloseLoader(false));
+        } else {
+          dispatch(CloseLoader(false));
+          toast(result?.payload?.data.message, {
+            hideProgressBar: true,
+            autoClose: 3000,
+            type: "error",
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err, "SignUP ERROR");
+      });
+  };
+
+  const MyTextArea = ({ label, ...props }) => {
+    const [field, meta] = useField(props);
+    return (
+      <>
+        <label htmlFor={props.id || props.name}>{label}</label>
+        <textarea className="text-area" {...field} {...props} />
+      </>
+    );
   };
   return (
     <div className=" min-h-screen grid bg-white lg:grid-cols-2 lg:col-rows-1">
       <div className="hidden lg:flex items-center after:top-0 after:bottom-0 after:opacity-60 after:left-0 after:right-0 ">
-        <img
-          className="h-full w-full"
-          src="/assets/login.svg"
-          alt="Branding"
-        />
+        <img className="h-full w-full" src="/assets/login.svg" alt="Branding" />
       </div>
 
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
         enableReinitialize={true}
-        onSubmit={async (values) => {
-          await handleSubmit(values);
+        onSubmit={(values) => {
+          handleSubmit(values);
         }}
       >
         {(formik) => {
@@ -90,7 +142,7 @@ export default function Personaldetail() {
                             src="/assets/icons/upload.svg"
                             className="mr-1"
                           />
-                          Upload Photo
+                          Upload Your Profile Photo
                         </label>
                       </div>
                     </div>
@@ -98,31 +150,7 @@ export default function Personaldetail() {
                     <div className="space-y-5 mt-[52px] px-4 sm:px-6  lg:px-20 xl:px-[134px]">
                       <div>
                         <label
-                          htmlFor="email"
-                          className="block text-[13px] font-medium text-gray700"
-                        >
-                          Full Name
-                        </label>
-                        <div className="mt-1">
-                          <Field
-                            id="name"
-                            name="name"
-                            placeholder="Enter your name"
-                            type="text"
-                            className="block  bg-white text-[#090415] w-full h-[48px] appearance-none rounded border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
-                          />
-                          <div style={{ color: "red" }}>
-                            <ErrorMessage
-                              name="name"
-                              component="span"
-                              className="error text-[13px] font-medium leanding-[20px] text-red500"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="email"
+                          htmlFor="phone"
                           className="block text-[13px] font-medium text-gray700"
                         >
                           Phone
@@ -131,7 +159,7 @@ export default function Personaldetail() {
                           <Field
                             id="phone"
                             name="phone"
-                            placeholder="Phone Number"
+                            placeholder="Enter Your Phone Number."
                             type="number"
                             className="block bg-white text-[#090415] w-full h-[48px] appearance-none rounded border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
                           />
@@ -146,59 +174,133 @@ export default function Personaldetail() {
                       </div>
                       <div>
                         <label
-                          htmlFor="email"
+                          htmlFor="gstnumber"
                           className="block text-[13px] font-medium text-gray700"
                         >
-                          Company Name
+                          GST Number
                         </label>
                         <div className="mt-1">
                           <Field
-                            id="companyName"
-                            name="companyName"
-                            placeholder="Enter your ompany name"
+                            id="gstnumber"
+                            name="gstnumber"
+                            placeholder="Enter Your GST Number."
                             type="text"
-                            className="block bg-white text-[#090415] w-full h-[48px] appearance-none rounded border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
+                            className="block  bg-white text-[#090415] w-full h-[48px] appearance-none rounded border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
                           />
                           <div style={{ color: "red" }}>
                             <ErrorMessage
-                              name="companyName"
+                              name="gstnumber"
                               component="span"
                               className="error text-[13px] font-medium leanding-[20px] text-red500"
                             />
                           </div>
                         </div>
                       </div>
-                      {/* <div>
+                      <div>
                         <label
-                          htmlFor="email"
+                          htmlFor="vatnumber"
                           className="block text-[13px] font-medium text-gray700"
                         >
-                          Company Website
+                          Vat Number
                         </label>
                         <div className="mt-1">
                           <Field
-                            id="website"
-                            name="website"
-                            placeholder="Website link"
+                            id="vatnumber"
+                            name="vatnumber"
+                            placeholder="Enter Your Vat Number."
                             type="text"
                             className="block bg-white text-[#090415] w-full h-[48px] appearance-none rounded border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
                           />
                           <div style={{ color: "red" }}>
                             <ErrorMessage
-                              name="website"
+                              name="vatnumber"
                               component="span"
                               className="error text-[13px] font-medium leanding-[20px] text-red500"
                             />
                           </div>
                         </div>
-                      </div> */}
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="tinnumber"
+                          className="block text-[13px] font-medium text-gray700"
+                        >
+                          Tin Number
+                        </label>
+                        <div className="mt-1">
+                          <Field
+                            id="tinnumber"
+                            name="tinnumber"
+                            placeholder="Enter Your Tin Number."
+                            type="text"
+                            className="block bg-white text-[#090415] w-full h-[48px] appearance-none rounded border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
+                          />
+                          <div style={{ color: "red" }}>
+                            <ErrorMessage
+                              name="tinnumber"
+                              component="span"
+                              className="error text-[13px] font-medium leanding-[20px] text-red500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="udhyamnumber"
+                          className="block text-[13px] font-medium text-gray700"
+                        >
+                          Udhyam Number
+                        </label>
+                        <div className="mt-1">
+                          <Field
+                            id="udhyamnumber"
+                            name="udhyamnumber"
+                            placeholder="Enter Your Udhyam Number."
+                            type="text"
+                            className="block bg-white text-[#090415] w-full h-[48px] appearance-none rounded border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
+                          />
+                          <div style={{ color: "red" }}>
+                            <ErrorMessage
+                              name="udhyamnumber"
+                              component="span"
+                              className="error text-[13px] font-medium leanding-[20px] text-red500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="address"
+                          className="block text-[13px] font-medium text-gray700"
+                        >
+                          Address
+                        </label>
+                        <div className="mt-1">
+                          <MyTextArea
+                            name="address"
+                            id="address"
+                            rows="4"
+                            className="block bg-white text-[#090415] w-full appearance-none rounded border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
+                            placeholder="Enter your Address."
+                          />
+
+                          <div style={{ color: "red" }}>
+                            <ErrorMessage
+                              name="address"
+                              component="span"
+                              className="error text-[13px] font-medium leanding-[20px] text-red500"
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
                 <div className="flex px-[60px] mt-20  justify-between">
                   <button
+                    type="button"
                     className="flex justify-center rounded border border-transparent bg-transparent  py-3 px-[20px] text-[15px] flex items-center font-semibold text-violet600 focus:outline-none focus:ring-0 "
-                    onClick={() => router.back()}
+                    onClick={handleBack}
                   >
                     <img src="/assets/icons/left.svg" className="mr-3.5" /> Back
                   </button>

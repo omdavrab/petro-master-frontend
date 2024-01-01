@@ -11,12 +11,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { HandleSideBar } from "@/redux/action/sidebar";
 const navigation = [
   { name: "Dashboard", href: "/admin/dashboard", icon: faHouse },
-  {
-    name: "Order",
-    href: "/admin/order",
-    href2: "/admin/order/orderdetail",
-    icon: faClipboard,
-  },
+  // {
+  //   name: "Order",
+  //   href: "/admin/order",
+  //   href2: "/admin/order/orderdetail",
+  //   icon: faClipboard,
+  // },
   {
     name: "Menu",
     href: "#",
@@ -50,11 +50,13 @@ const navigation = [
 
     ],
   },
-  { name: "Qr Code", href: "/admin/manage_qrcode", icon: faQrcode, current: false },
-  { name: "User", href: "/admin/customers", icon: faUserGroup, current: false },
+  { name: "Employee", href: "/admin/employee", icon: faUserGroup, current: false },
+  { name: "Tank", href: "/admin/tank", icon: faBowlFood, current: false },
+  { name: "Machine", href: "/admin/machine", icon: faClipboard, current: false },
+  
   {
-    name: "Coupon Code",
-    href: "/admin/coupon",
+    name: "Rate",
+    href: "/admin/rate",
     icon: faPercentage,
     current: false,
   },
@@ -229,13 +231,13 @@ const Sidebar = ({ openSidebar, setOpenSidebar }) => {
                 </ul>
               </li>
 
-              <div className={`${openSidebar ? "hidden" : "block"} bg-main transition ease-in duration-300 flex-1 flex items-center`}>
+              {/* <div className={`${openSidebar ? "hidden" : "block"} bg-main transition ease-in duration-300 flex-1 flex items-center`}>
                 <div className='bg-svg bg-orange rounded-lg flex-col flex items-center mt-[66px]'>
                   <Image alt='res-menu' src="/assets/icons/res-menu.png" width={150} height={150} className="relative top-[-80px]" />
                   <h3 className='text-white text-[24px] mt-[-73px] '>Add Menu</h3>
                   <span className='text-white text-center text-md py-2.5'>Manage Your food and beverages menu  <AiOutlineArrowRight className='inline-block' /></span>
                 </div>
-              </div>
+              </div> */}
               <li className="mt-auto">
                 <Link
                   href="/admin/setting"

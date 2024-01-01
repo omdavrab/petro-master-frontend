@@ -4,6 +4,7 @@ import * as Yup from "yup";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
+import { SignUpState } from "@/redux/action/state";
 
 export default function Register() {
   const router = useRouter();
@@ -24,7 +25,6 @@ export default function Register() {
     remember: Yup.string().required("Terms of service is required!"),
   });
 
-  const handleSubmit = async (values) => {};
   return (
     <div className=" min-h-screen grid bg-white lg:grid-cols-2 lg:col-rows-1">
       <div className="hidden lg:flex items-center after:top-0 after:bottom-0 after:opacity-60 after:left-0 after:right-0">
@@ -50,8 +50,10 @@ export default function Register() {
               validationSchema={validationSchema}
               enableReinitialize={true}
               onSubmit={async (values) => {
-                await handleSubmit(values);
-                router.push("/admin/onboarding/personaldetail");
+                await dispatch(SignUpState(values));
+                router.push({
+                  pathname: "/admin/register/personaldetail",
+                });
               }}
             >
               {(formik) => {
