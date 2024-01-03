@@ -1,19 +1,15 @@
-import Link from "next/link";
 import React, { useState } from "react";
 import { AiFillCamera } from "react-icons/ai";
 import { HiOutlineUpload } from "react-icons/hi";
 import dynamic from "next/dynamic";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
-import { GrClose } from "react-icons/gr";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import { CloseLoader, OpenLoader } from "@/redux/action/loader";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
-import { HandleRestaurant } from "@/redux/action/restaurant";
-import Loader from "@/components/admin/Loader";
 const TimePicker = dynamic(() => import("react-time-picker"), {
   ssr: false,
 });
@@ -46,28 +42,7 @@ const RestaurantDetail = () => {
     formData.append("closeTime", time.closeTime);
     formData.append("image", image);
 
-    await dispatch(HandleRestaurant(formData, SignupToken))
-      .then((result) => {
-        if (result.payload.status === 200) {
-          toast(result?.payload?.data.message, {
-            hideProgressBar: true,
-            autoClose: 3000,
-            type: "success",
-          });
-          router.push("/admin/dashboard");
-          dispatch(CloseLoader(false));
-        } else {
-          dispatch(CloseLoader(false));
-          toast(result?.payload?.data.message, {
-            hideProgressBar: true,
-            autoClose: 3000,
-            type: "error",
-          });
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    
   };
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f1f1f1]">

@@ -2,9 +2,16 @@ import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/router";
+import { CloseLoader, OpenLoader } from "@/redux/action/loader";
+import { useDispatch, useSelector } from "react-redux";
+import { HandleUpdatePassword } from "@/redux/action/auth";
+import { toast } from "react-toastify";
 
 export default function Resetpassword() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { data } = useSelector((state) => state.SignUpStateData);
+
   const initialValues = {
     password: "",
     confirmPassword: "",
@@ -17,19 +24,53 @@ export default function Resetpassword() {
       .min(8)
       .oneOf([Yup.ref("password"), null], "Password don't match."),
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState(false);
+
+  const HandleData = async (values) => {
+    try {
+      dispatch(OpenLoader(true));
+      values.email = data.email;
+      await dispatch(HandleUpdatePassword(values))
+        .then(async (result) => {
+          if (
+            result?.payload?.status === 201 ||
+            result?.payload?.status === 200
+          ) {
+            toast(result?.payload?.data?.message, {
+              hideProgressBar: true,
+              autoClose: 3000,
+              type: "success",
+            });
+            router.push("/admin/login");
+            dispatch(CloseLoader(false));
+          } else {
+            dispatch(CloseLoader(false));
+            toast(result?.payload?.response?.data?.message, {
+              hideProgressBar: true,
+              autoClose: 3000,
+              type: "error",
+            });
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          dispatch(CloseLoader(false));
+        });
+    } catch (err) {
+      dispatch(CloseLoader(false));
+    }
+  };
 
   return (
     <div className=" min-h-screen grid bg-white lg:grid-cols-2 lg:col-rows-1">
       <div className="hidden lg:flex items-center after:top-0 after:bottom-0 after:opacity-60 after:left-0 after:right-0 ">
-        
         <img
           className="h-full w-full"
           src="/assets/login.svg"
           alt="Branding&Lifestyle"
         />
-        
       </div>
       <div className="flex  flex-col justify-center items-center px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-[134px]">
         <div className="mx-auto w-full ">
@@ -47,7 +88,7 @@ export default function Resetpassword() {
               validationSchema={validationSchema}
               enableReinitialize={true}
               onSubmit={(values) => {
-                router.push("/admin/login");
+                HandleData(values);
               }}
             >
               {(formik) => {
@@ -70,6 +111,7 @@ export default function Resetpassword() {
                         />
 
                         <button
+                          type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-0  top-0 h-[48px]  px-3 py-2"
                         >
@@ -108,6 +150,7 @@ export default function Resetpassword() {
                         />
 
                         <button
+                          type="button"
                           onClick={() => setConfirmPassword(!confirmPassword)}
                           className="absolute right-0  top-0 h-[48px]  px-3 py-2"
                         >

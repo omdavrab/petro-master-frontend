@@ -1,47 +1,49 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Pagination from "@/components/Pagination/Pagination";
-import AddRate from "@/components/admin/AddRate";
+import DeletePopup from "@/components/admin/DeletePopup";
 import NoData from "@/components/admin/NoData";
-import { GetRate } from "@/redux/action/rate";
-import moment from "moment";
-import React, { useEffect, useMemo, useState } from "react";
-import { FaRegEdit } from "react-icons/fa";
-import { RiDeleteBin5Line } from "react-icons/ri";
+import { RiDeleteBin5Line, RiEditBoxFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
+import { FaRegEdit } from "react-icons/fa";
+import AddShift from "@/components/admin/AddShift";
+import { GetShift } from "@/redux/action/shift";
 
-const Rate = () => {
+const Shift = () => {
   const dispatch = useDispatch();
+  const ShiftList = useSelector((state) => state?.Shift?.shiftlist);
+
   const [open, setOpen] = useState(false);
-  const [editopen, setEditOpen] = useState(false);
-  const RateList = useSelector((state) => state?.Rate?.ratelist);
-  const [editRate, setEditRate] = useState();
   const [customersData, setCustomersData] = useState();
+  const cancelButtonRef = useRef(null);
   const [page, setPage] = useState(1);
+  const [view, setView] = useState(false);
+  const [editEmployee, setEditEmployee] = useState();
 
   useEffect(() => {
-    dispatch(GetRate(page));
+    dispatch(GetShift(page));
   }, [page]);
 
   useMemo(() => {
-    setCustomersData(RateList);
-  }, [RateList]);
+    setCustomersData(ShiftList);
+  }, [ShiftList]);
 
   return (
     <>
       <button
         onClick={() => {
-          setEditRate(null);
-          setOpen(true);
+          setEditEmployee(null);
+          setView(true);
         }}
         className="text-white bg-gray500 hover:bg-dark700 transition duration-300 py-1.5 px-5 rounded ml-auto mr-[40px] flex"
       >
-        Add Today Rate
+        Add New Shift
       </button>
-      <AddRate setOpen={setOpen} open={open} editrate={editRate} />
+      <AddShift open={view} setOpen={setView} editEmployee={editEmployee} />
       {customersData?.data?.length > 0 ? (
         <div className="px-6 sm:px-10">
           <div>
             <h4 className="text-[24px] dark:text-white font-medium text-gray-900">
-              Rates
+              Shift
             </h4>
           </div>
           <div className="mt-8 bg-white dark:bg-[#0c1a32] rounded-md shadow-sm flow-root">
@@ -52,7 +54,7 @@ const Rate = () => {
                     <tr>
                       <th
                         scope="col"
-                        className="py-3.5 pl-4 dark:text-white pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
+                        className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
                       >
                         #
                       </th>
@@ -60,25 +62,19 @@ const Rate = () => {
                         scope="col"
                         className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
                       >
-                        Date
+                        Shift Name
                       </th>
                       <th
                         scope="col"
                         className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
                       >
-                        MS Rate
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
-                      >
-                        HSD Rate
+                        Time
                       </th>
                       <th
                         scope="col"
                         className="px-3 py-3.5 dark:text-white max-w-[80px] text-right text-sm font-semibold text-gray-900"
                       >
-                        Option
+                        Other
                       </th>
                     </tr>
                   </thead>
@@ -94,28 +90,28 @@ const Rate = () => {
                           }
                         >
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-300 sm:pl-3">
-                            {index + 1}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-700 dark:text-gray-300">
-                            {moment(item.date).format("DD/MM/yyyy")}
+                            #{index + 1}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {item.msRate}
+                            {item?.name}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {item.hsdRate}
+                            {item?.openTime} - {item?.closeTime} 
                           </td>
-                          <td className="relative whitespace-nowrap max-w-[80px] pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
+                          <td className="relative gap-6 whitespace-nowrap max-w-[80px] pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
                             <button
                               onClick={() => {
-                                setEditRate(item);
-                                setOpen(true);
+                                setEditEmployee(item);
+                                setView(true);
                               }}
                               className="hover:text-red-700 mr-2.5 text-orange trnasition duration-200 ease-in outline-none focus:outline-none"
                             >
                               <FaRegEdit className="text-[18px]" />
                             </button>
-                            <button className="hover:text-red-700  text-red-400 trnasition duration-200 ease-in outline-none focus:outline-none">
+                            <button
+                              onClick={() => setOpen(true)}
+                              className="hover:text-red-700  text-red-400 trnasition duration-200 ease-in outline-none focus:outline-none"
+                            >
                               <RiDeleteBin5Line className="text-[18px]" />
                             </button>
                           </td>
@@ -154,10 +150,18 @@ const Rate = () => {
       ) : (
         <NoData />
       )}
+      <DeletePopup
+        title="Delete User"
+        dis="Are you sure you want to Delte User? All of your data will be permanently removed
+          from our servers forever. This action cannot be undone."
+        deletebuttonTitle="Delete User"
+        open={open}
+        cancelButtonRef={cancelButtonRef}
+        setOpen={setOpen}
+      />
     </>
   );
 };
-
 export async function getServerSideProps(ctx) {
   const myCookie = ctx.req?.cookies || "";
 
@@ -173,4 +177,4 @@ export async function getServerSideProps(ctx) {
     props: {},
   };
 }
-export default Rate;
+export default Shift;

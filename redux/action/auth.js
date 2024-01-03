@@ -44,11 +44,28 @@ export const HandleVerifyOTP = (data) => {
     }
   };
 };
-
+// Forgot Password
 export const HandleForgotPassword = (data) => {
   return async (dispatch) => {
     try {
       const response = await axios.post(`${URL}/forgotPassword`, data);
+      return dispatch({
+        type: "FORGOT_PASSWORD",
+        payload: response,
+      });
+    } catch (err) {
+      return dispatch({
+        type: "SET_LOADING",
+        payload: err,
+      });
+    }
+  };
+};
+// Update Password
+export const HandleUpdatePassword = (data) => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.post(`${URL}/updatePassword`, data);
       return dispatch({
         type: "FORGOT_PASSWORD",
         payload: response,

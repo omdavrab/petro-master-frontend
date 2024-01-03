@@ -2,9 +2,15 @@ import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/router";
+import { useDispatch } from "react-redux";
+import { HandleForgotPassword } from "@/redux/action/auth";
+import { CloseLoader, OpenLoader } from "@/redux/action/loader";
+import { toast } from "react-toastify";
+import { SignUpState } from "@/redux/action/state";
 
 const ForgotPassword = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
   const initialValues = {
     email: "",
   };
@@ -12,6 +18,50 @@ const ForgotPassword = () => {
   const validationSchema = Yup.object({
     email: Yup.string().required("Email Id is required!").email(),
   });
+
+  const HandleData = async (values) => {
+    try {
+      dispatch(OpenLoader(true));
+      await dispatch(HandleForgotPassword(values))
+        .then(async (result) => {
+          if (
+            result?.payload?.status === 201 ||
+            result?.payload?.status === 200
+          ) {
+            toast(result?.payload?.data?.message, {
+              hideProgressBar: true,
+              autoClose: 3000,
+              type: "success",
+            });
+            values.ForgotPassword = true;
+            await dispatch(SignUpState(values));
+            router.push("/admin/register/verification");
+            dispatch(CloseLoader(false));
+          } else {
+            dispatch(CloseLoader(false));
+            toast(result?.payload?.response?.data?.message, {
+              hideProgressBar: true,
+              autoClose: 3000,
+              type: "error",
+            });
+            console.log(
+              "🚀 ~ file: forgotpassword.js:42 ~ .then ~ result?.payload?.response?.data?.message:",
+              result?.payload?.response?.data?.message
+            );
+          }
+        })
+        .catch((err) => {
+          console.log(
+            "🚀 ~ file: forgotpassword.js:45 ~ HandleData ~ err:",
+            err
+          );
+          dispatch(CloseLoader(false));
+        });
+    } catch (err) {
+      console.log("🚀 ~ file: forgotpassword.js:48 ~ HandleData ~ err:", err);
+      dispatch(CloseLoader(false));
+    }
+  };
   return (
     <div className=" min-h-screen grid bg-white lg:grid-cols-2 lg:col-rows-1">
       <div className="hidden lg:flex items-center after:top-0 after:bottom-0 after:opacity-60 after:left-0 after:right-0">
@@ -38,7 +88,7 @@ const ForgotPassword = () => {
               validationSchema={validationSchema}
               enableReinitialize={true}
               onSubmit={(values) => {
-                router.push("/admin/verification");
+                HandleData(values);
               }}
             >
               {(formik) => {

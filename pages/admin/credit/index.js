@@ -8,11 +8,10 @@ import { FaRegEdit } from "react-icons/fa";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 
-const Rate = () => {
+const Credit = () => {
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
-  const [editopen, setEditOpen] = useState(false);
-  const RateList = useSelector((state) => state?.Rate?.ratelist);
+  const CreditList = useSelector((state) => state?.Credit?.creditlist);
   const [editRate, setEditRate] = useState();
   const [customersData, setCustomersData] = useState();
   const [page, setPage] = useState(1);
@@ -22,8 +21,8 @@ const Rate = () => {
   }, [page]);
 
   useMemo(() => {
-    setCustomersData(RateList);
-  }, [RateList]);
+    setCustomersData(CreditList);
+  }, [CreditList]);
 
   return (
     <>
@@ -173,4 +172,4 @@ export async function getServerSideProps(ctx) {
     props: {},
   };
 }
-export default Rate;
+export default Credit;

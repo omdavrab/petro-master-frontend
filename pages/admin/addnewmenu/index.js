@@ -6,15 +6,7 @@ import { CgTrash } from "react-icons/cg";
 import { MdAddCircleOutline } from "react-icons/md";
 import { TbTrash } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import {
-  HandleEditMenu,
-  HandleGetMenuById,
-  HandleMenu,
-} from "@/redux/action/menu";
 import { CloseLoader, OpenLoader } from "@/redux/action/loader";
-import Loader from "@/components/admin/Loader";
-import { HandleGetFoodCategory } from "@/redux/action/foodCategory";
 import { useRouter } from "next/router";
 import API from "@/URL";
 // import { URL } from 'url';
@@ -33,9 +25,7 @@ const AddNewMenu = () => {
   const MenuById = useSelector((state) => state.MenuId.menuId.result);
 
   const { id } = router.query;
-  const handleRadioChange = (value) => {
-    setPayment(value);
-  };
+
   const [inputFields, setInputFields] = useState([
     { customizeItem: "", customizeItemPrice: "" },
   ]);
@@ -103,43 +93,12 @@ const AddNewMenu = () => {
     formData.append("customizeItem", JSON.stringify(inputFields));
     formData.append("categoryId", categoryId);
 
-    await dispatch(
-      id ? HandleEditMenu({ formData, id: id }) : HandleMenu(formData)
-    )
-      .then((result) => {
-        if (result.payload.status === 200) {
-          toast(result?.payload?.data.message, {
-            hideProgressBar: true,
-            autoClose: 3000,
-            type: "success",
-          });
-          setVeg("");
-          setMenuImage("");
-          setCustomization();
-          setMenuData({});
-          dispatch(CloseLoader(false));
-        } else {
-          dispatch(CloseLoader(false));
-          toast(result?.payload?.data.message, {
-            hideProgressBar: true,
-            autoClose: 3000,
-            type: "error",
-          });
-        }
-      })
-      .catch((err) => {
-        console.log(err, "SignUP ERROR");
-      });
+   
   };
   const handleData = (e) => {
     setMenuData({ ...menuData, [e.target.name]: e.target.value });
   };
-  useEffect(() => {
-    dispatch(HandleGetFoodCategory());
-    if (id) {
-      dispatch(HandleGetMenuById(id));
-    }
-  }, []);
+
 
   useEffect(() => {
     setCategoryData(category);

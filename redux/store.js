@@ -13,6 +13,9 @@ const persistConfig = {
     "Tank",
     "Machine",
     "Rate",
+    "Bank",
+    "Upi",
+    "Shift",
     
     "GetMenu",
     "StoraSideBarData",

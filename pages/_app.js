@@ -1,6 +1,5 @@
 import { useRouter } from "next/router";
 import "@/styles/globals.css";
-import Layout from "@/components/Layout";
 import AdminLayout from "@/components/admin/AdminLayout";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
@@ -73,7 +72,8 @@ export default function App({ Component, pageProps, initialTheme }) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
       {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+        style={{zIndex:"99999"}}>
           <div className="spinner"></div>
         </div>
       )}

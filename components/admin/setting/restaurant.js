@@ -7,23 +7,15 @@ import dynamic from "next/dynamic";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  HandleEditRestaurantData,
-  HandleRestaurantData,
-} from "@/redux/action/restaurant";
 import API from "@/URL";
 import { CloseLoader, OpenLoader } from "@/redux/action/loader";
-
-import Profile from "@/components/admin/setting/profile";
-import Loader from "../Loader";
-import { toast } from "react-toastify";
 const TimePicker = dynamic(() => import("react-time-picker"), {
   ssr: false,
 });
 
 export default function Restaurant() {
   const dispatch = useDispatch();
-  const Restaurant = useSelector((state) => state.Restaurant?.restaurantData);
+  const Restaurant = useSelector((state) => state?.Restaurant?.restaurantData);
 
   const [image, setImage] = useState();
   const [editRestaurant, setEditRestaurant] = useState();
@@ -48,28 +40,7 @@ export default function Restaurant() {
     formData.append("closeTime", time?.closeTime);
     formData.append("image", image);
 
-    await dispatch(HandleEditRestaurantData(formData))
-      .then((result) => {
-        if (result.payload.status === 200) {
-          toast(result?.payload?.data.message, {
-            hideProgressBar: true,
-            autoClose: 3000,
-            type: "success",
-          });
-          dispatch(HandleRestaurantData());
-          dispatch(CloseLoader(false));
-        } else {
-          dispatch(CloseLoader(false));
-          toast(result?.payload?.data.message, {
-            hideProgressBar: true,
-            autoClose: 3000,
-            type: "error",
-          });
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    
   };
 
   useMemo(() => {
@@ -247,7 +218,7 @@ export default function Restaurant() {
                     // </div>
                     <div className="h-[80px] w-[160px] shadow-lg  shadow-dark15  flex justify-center items-center bg-white p-1">
                       <img
-                        src={`${API}/image/${Restaurant.logo}`}
+                        src={`${API}/image/${Restaurant?.logo}`}
                         alt="image"
                         className="w-full h-full"
                       />

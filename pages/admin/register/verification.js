@@ -1,6 +1,7 @@
 import { HandleVerifyOTP } from "@/redux/action/auth";
 import { CloseLoader } from "@/redux/action/loader";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import OTPInput from "react-otp-input";
 import OtpInput from "react-otp-input";
@@ -10,6 +11,7 @@ import { toast } from "react-toastify";
 export default function Verification() {
   const [OTP, setOTP] = useState("");
   const dispatch = useDispatch();
+  const router = useRouter()
   const { data } = useSelector((state) => state.SignUpStateData);
 
   const [isActive, setIsActive] = useState(false);
@@ -32,7 +34,11 @@ export default function Verification() {
             autoClose: 3000,
             type: "success",
           });
-          router.push("/admin/dashboard");
+          if (data?.ForgotPassword) {
+            router.push("/admin/resetpassword");
+          }else{
+            router.push("/admin/dashboard");
+          }
           dispatch(CloseLoader(false));
         } else {
           dispatch(CloseLoader(false));
