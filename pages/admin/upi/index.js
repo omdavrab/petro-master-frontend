@@ -1,7 +1,6 @@
 import React, {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -11,7 +10,6 @@ import NoData from "@/components/admin/NoData";
 import { RiDeleteBin5Line, RiEditBoxFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { FaRegEdit } from "react-icons/fa";
-import { GetBank } from "@/redux/action/bank";
 import AddUpi from "@/components/admin/AddUpi";
 import { GetUpi } from "@/redux/action/upi";
 
@@ -20,7 +18,7 @@ const Upi = () => {
   const UpiList = useSelector((state) => state?.Upi?.upiList);
 
   const [open, setOpen] = useState(false);
-  const [customersData, setCustomersData] = useState();
+  const [customersData, setCustomersData] = useState({});
   const cancelButtonRef = useRef(null);
   const [page, setPage] = useState(1);
   const [view, setView] = useState(false);
@@ -30,7 +28,7 @@ const Upi = () => {
     dispatch(GetUpi(page));
   }, [page]);
 
-  useMemo(() => {
+  useEffect(() => {
     setCustomersData(UpiList);
   }, [UpiList]);
 

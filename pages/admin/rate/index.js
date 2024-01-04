@@ -3,7 +3,7 @@ import AddRate from "@/components/admin/AddRate";
 import NoData from "@/components/admin/NoData";
 import { GetRate } from "@/redux/action/rate";
 import moment from "moment";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaRegEdit } from "react-icons/fa";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,17 +11,16 @@ import { useDispatch, useSelector } from "react-redux";
 const Rate = () => {
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
-  const [editopen, setEditOpen] = useState(false);
   const RateList = useSelector((state) => state?.Rate?.ratelist);
   const [editRate, setEditRate] = useState();
-  const [customersData, setCustomersData] = useState();
+  const [customersData, setCustomersData] = useState({});
   const [page, setPage] = useState(1);
 
   useEffect(() => {
     dispatch(GetRate(page));
   }, [page]);
 
-  useMemo(() => {
+  useEffect(() => {
     setCustomersData(RateList);
   }, [RateList]);
 

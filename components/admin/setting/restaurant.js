@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import SettingTab from "@/components/admin/SettingTab";
 import { HiOutlineUpload } from "react-icons/hi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -43,7 +43,7 @@ export default function Restaurant() {
     
   };
 
-  useMemo(() => {
+  useEffect(() => {
     setEditRestaurant({
       name: Restaurant?.name,
       address: Restaurant?.address,

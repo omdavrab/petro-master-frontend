@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AiFillCamera } from "react-icons/ai";
 import { HiOutlineUpload } from "react-icons/hi";
 import { RiImageEditFill } from "react-icons/ri";

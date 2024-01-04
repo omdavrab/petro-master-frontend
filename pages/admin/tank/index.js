@@ -1,19 +1,13 @@
 import React, {
-  useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
 import Pagination from "@/components/Pagination/Pagination";
 import DeletePopup from "@/components/admin/DeletePopup";
 import NoData from "@/components/admin/NoData";
-import { RiDeleteBin5Line, RiEditBoxFill } from "react-icons/ri";
+import { RiDeleteBin5Line } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
-import AddEmployee from "@/components/admin/AddEmployee";
-import { GetEmployee } from "@/redux/action/employee";
-import { GrView } from "react-icons/gr";
-import EmployeeView from "@/components/admin/EmployeeView";
 import AddTank from "@/components/admin/AddTank";
 import { GetTank } from "@/redux/action/tank";
 import { FaRegEdit } from "react-icons/fa";
@@ -23,7 +17,7 @@ const Tank = () => {
   const TankList = useSelector((state) => state?.Tank?.tanklist);
 
   const [open, setOpen] = useState(false);
-  const [customersData, setCustomersData] = useState();
+  const [customersData, setCustomersData] = useState({});
   const cancelButtonRef = useRef(null);
   const [page, setPage] = useState(1);
   const [view, setView] = useState(false);
@@ -33,7 +27,7 @@ const Tank = () => {
     dispatch(GetTank(page));
   }, [page]);
 
-  useMemo(() => {
+  useEffect(() => {
     setCustomersData(TankList);
   }, [TankList]);
 

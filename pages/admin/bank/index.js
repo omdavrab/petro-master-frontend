@@ -1,21 +1,13 @@
 import React, {
-  useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
 import Pagination from "@/components/Pagination/Pagination";
 import DeletePopup from "@/components/admin/DeletePopup";
 import NoData from "@/components/admin/NoData";
-import { RiDeleteBin5Line, RiEditBoxFill } from "react-icons/ri";
+import { RiDeleteBin5Line } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
-import AddEmployee from "@/components/admin/AddEmployee";
-import { GetEmployee } from "@/redux/action/employee";
-import { GrView } from "react-icons/gr";
-import EmployeeView from "@/components/admin/EmployeeView";
-import AddTank from "@/components/admin/AddTank";
-import { GetTank } from "@/redux/action/tank";
 import { FaRegEdit } from "react-icons/fa";
 import { GetBank } from "@/redux/action/bank";
 import AddBank from "@/components/admin/AddBank";
@@ -25,7 +17,7 @@ const Bank = () => {
   const BankList = useSelector((state) => state?.Bank?.banklist);
 
   const [open, setOpen] = useState(false);
-  const [customersData, setCustomersData] = useState();
+  const [customersData, setCustomersData] = useState({});
   const cancelButtonRef = useRef(null);
   const [page, setPage] = useState(1);
   const [view, setView] = useState(false);
@@ -35,7 +27,7 @@ const Bank = () => {
     dispatch(GetBank(page));
   }, [page]);
 
-  useMemo(() => {
+  useEffect(() => {
     setCustomersData(BankList);
   }, [BankList]);
 

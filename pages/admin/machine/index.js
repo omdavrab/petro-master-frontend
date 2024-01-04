@@ -1,7 +1,5 @@
 import React, {
-  useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -26,7 +24,7 @@ const Machine = () => {
   const MachineList = useSelector((state) => state?.Machine?.machinelist);
 
   const [open, setOpen] = useState(false);
-  const [customersData, setCustomersData] = useState();
+  const [customersData, setCustomersData] = useState({});
   const cancelButtonRef = useRef(null);
   const [page, setPage] = useState(1);
   const [view, setView] = useState(false);
@@ -37,7 +35,7 @@ const Machine = () => {
     dispatch(GetMachine(page));
   }, [page]);
 
-  useMemo(() => {
+  useEffect(() => {
     setCustomersData(MachineList);
   }, [MachineList]);
 

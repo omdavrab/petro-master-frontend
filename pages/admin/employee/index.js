@@ -1,7 +1,5 @@
 import React, {
-  useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -21,7 +19,7 @@ const Employee = () => {
   const EmployeeList = useSelector((state) => state?.Employee?.employeelist);
 
   const [open, setOpen] = useState(false);
-  const [customersData, setCustomersData] = useState();
+  const [customersData, setCustomersData] = useState({});
   const cancelButtonRef = useRef(null);
   const [page, setPage] = useState(1);
   const [view, setView] = useState(false);
@@ -32,7 +30,7 @@ const Employee = () => {
     dispatch(GetEmployee(page));
   }, [page]);
 
-  useMemo(() => {
+  useEffect(() => {
     setCustomersData(EmployeeList);
   }, [EmployeeList]);
 
@@ -117,7 +115,6 @@ const Employee = () => {
                     </tr>
                   </thead>
                   <tbody className="dark:bg-[#0c1a32] bg-white">
-                    {/* {customersData?.data?.length > 0 && customersData?.data.map((item, personIdx)  => ( */}
                     {customersData?.data?.length > 0 &&
                       customersData?.data?.map((item, index) => (
                         <tr

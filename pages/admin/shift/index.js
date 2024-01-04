@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Pagination from "@/components/Pagination/Pagination";
 import DeletePopup from "@/components/admin/DeletePopup";
 import NoData from "@/components/admin/NoData";
@@ -13,7 +13,7 @@ const Shift = () => {
   const ShiftList = useSelector((state) => state?.Shift?.shiftlist);
 
   const [open, setOpen] = useState(false);
-  const [customersData, setCustomersData] = useState();
+  const [customersData, setCustomersData] = useState({});
   const cancelButtonRef = useRef(null);
   const [page, setPage] = useState(1);
   const [view, setView] = useState(false);
@@ -23,7 +23,7 @@ const Shift = () => {
     dispatch(GetShift(page));
   }, [page]);
 
-  useMemo(() => {
+  useEffect(() => {
     setCustomersData(ShiftList);
   }, [ShiftList]);
 
