@@ -48,7 +48,10 @@ export default function AddMachine({ view, setView, editEmployee }) {
           : HandleCreateMachine(values)
       )
         .then(async (result) => {
-          if (result?.payload?.status === 201 || 200) {
+          if (
+            result?.payload?.status === 201 ||
+            result?.payload?.status === 200
+          ) {
             toast(result?.payload?.data.message, {
               hideProgressBar: true,
               autoClose: 3000,

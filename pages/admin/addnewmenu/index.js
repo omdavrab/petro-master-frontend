@@ -21,8 +21,8 @@ const AddNewMenu = () => {
   const [veg, setVeg] = useState();
   const [menuData, setMenuData] = useState({});
   const [categoryData, setCategoryData] = useState([]);
-  const category = useSelector((state) => state.FoodCategory.getFoodCategory);
-  const MenuById = useSelector((state) => state.MenuId.menuId.result);
+  const category = useSelector((state) => state?.FoodCategory?.getFoodCategory);
+  const MenuById = useSelector((state) => state?.MenuId?.menuId?.result);
 
   const { id } = router.query;
 
@@ -198,7 +198,7 @@ const AddNewMenu = () => {
                     }}
                   >
                     <option name="category">Please select category</option>
-                    {categoryData.length > 0 &&
+                    {categoryData?.length > 0 &&
                       categoryData?.map((item) => {
                         const value = `${item._id},${item.name}`;
                         return (

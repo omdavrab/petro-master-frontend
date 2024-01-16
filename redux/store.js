@@ -16,6 +16,7 @@ const persistConfig = {
     "Bank",
     "Upi",
     "Shift",
+    "Report",
     
     "GetMenu",
     "StoraSideBarData",

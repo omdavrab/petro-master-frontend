@@ -25,6 +25,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { HandleSideBar } from "@/redux/action/sidebar";
 const navigation = [
   { name: "Dashboard", href: "/admin/dashboard", icon: faHouse },
+  { name: "Collection", href: "/admin/collection", icon: faHouse },
   {
     name: "Bank/UPI",
     href: "#",

@@ -11,6 +11,7 @@ import { Rate } from "./rate";
 import { Bank } from "./bank";
 import { Upi } from "./upi";
 import { Shift } from "./shift";
+import { Report } from "./dailyReport";
 
 const reducer = combineReducers({
   SignUpStateData: SignUpStateData,
@@ -22,6 +23,7 @@ const reducer = combineReducers({
   Bank: Bank,
   Upi: Upi,
   Shift: Shift,
+  Report : Report,
   ForgotOtpVerify: passwordForgot,
   LogIn: logIn,
   UserLogIn: UserlogIn,
