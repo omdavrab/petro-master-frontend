@@ -1,22 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
-import { AiFillCamera } from "react-icons/ai";
-import { HiOutlineUpload } from "react-icons/hi";
-import { RiImageEditFill } from "react-icons/ri";
-import { CgTrash } from "react-icons/cg";
-import { MdAddCircleOutline } from "react-icons/md";
-import { TbTrash } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import { CloseLoader, OpenLoader } from "@/redux/action/loader";
 import { useRouter } from "next/router";
-import API from "@/URL";
 import { GetShift } from "@/redux/action/shift";
 import { GetMachine } from "@/redux/action/machine";
 import { GetRate } from "@/redux/action/rate";
 import { GetEmployee } from "@/redux/action/employee";
-import moment from "moment";
 import { GetReport, HandleCreateReport } from "@/redux/action/dailyReport";
 import { toast } from "react-toastify";
-// import { URL } from 'url';
+import { GetTank } from "@/redux/action/tank";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 const Collection = () => {
   const dispatch = useDispatch();
@@ -24,48 +17,79 @@ const Collection = () => {
   const EmployeeList = useSelector(
     (state) => state?.Employee?.employeelist.data
   );
-  const RateList = useSelector((state) => state?.Rate?.ratelist);
+  const RateList = useSelector((state) => state?.Rate?.ratelist?.data);
   const MachineList = useSelector((state) => state?.Machine?.machinelist.data);
   const ShiftList = useSelector((state) => state?.Shift?.shiftlist.data);
+  const Report = useSelector((state) => state?.Report?.reportlist.data);
+  const TankList = useSelector((state) => state?.Tank?.tanklist.data);
 
   const [selectedMachines, setSelectedMachines] = useState([]);
   const [inputFields, setInputFields] = useState([{}]);
-  const [id , setID] = useState([])
   const [input, setInput] = useState({});
+  const idRef = useRef([]);
 
   const handleCheckboxChange = async (machine) => {
+    let id = [];
     const isSelected = selectedMachines.some(
       (selectedMachine) => selectedMachine.machineId === machine._id
     );
+
     if (isSelected) {
       setSelectedMachines((prevSelected) =>
         prevSelected.filter(
           (selectedMachine) => selectedMachine.machineId !== machine._id
         )
       );
-      setID((prevSelected) =>
-        prevSelected.filter(
-          (selectedMachine) => selectedMachine !== machine._id
-        )
+      idRef.current = idRef.current.filter(
+        (selectedMachine) => selectedMachine !== machine._id
       );
     } else {
-      
-      setID((prevSelected) =>
-        prevSelected.concat(machine._id)
-      );
-      await dispatch(GetReport({ id }));
+      idRef.current = idRef.current.concat(machine._id);
+      const updatedMachine = machine.nozzles.map((item) => {
+        const tank = TankList.find(
+          (T) => T._id.toString() === item.tankId.toString()
+        );
+        if (tank) {
+          let Rate;
+          if (tank.type === "MS") {
+            Rate = RateList[0].msRate;
+          } else {
+            Rate = RateList[0].hsdRate;
+          }
+          return {
+            machineId: machine._id,
+            machineName: machine.name,
+            machineType: machine.type,
+            tankType: tank.type,
+            rate: Rate,
+            ...item,
+          };
+        }
 
-      const updatedMachine = machine.nozzles.map((item) => ({
-        machineId: machine._id,
-        machineName: machine.name,
-        machineType: machine.type,
-        ...item,
-      }));
-      setSelectedMachines((prevSelected) =>
-        prevSelected.concat(updatedMachine)
-      );
+        return null; // Handle the case where tank is not found
+      });
+
+      await setSelectedMachines((prevSelected) => {
+        const newSelected = prevSelected.concat(updatedMachine);
+        dispatch(GetReport({ id: idRef.current })).then((x) => {
+          newSelected.forEach((item) => {
+            x?.payload &&
+              x?.payload?.data?.forEach((data) => {
+                data.machine.forEach((d) => {
+                  if (
+                    d.machineId === item.machineId &&
+                    d.nozzleId === item._id
+                  ) {
+                    item.opening = d?.closing;
+                    item.testing = 1;
+                  }
+                });
+              });
+          });
+        });
+        return newSelected;
+      });
     }
-    console.log(id, "id------>>>>>");
   };
 
   useEffect(() => {
@@ -73,17 +97,8 @@ const Collection = () => {
     dispatch(GetMachine(1));
     dispatch(GetRate(1));
     dispatch(GetEmployee(1));
+    dispatch(GetTank(1));
   }, []);
-  const addInputField = () => {
-    setInputFields([
-      ...inputFields,
-      {
-        customizeItem: "",
-        customizeItemPrice: "",
-      },
-    ]);
-  };
-  const outputList = inputFields.map((item) => item.customizeItem);
 
   const removeInputFields = (index) => {
     const rows = [...inputFields];
@@ -93,14 +108,24 @@ const Collection = () => {
 
   const handleChange = (index, evnt, data) => {
     const { name, value } = evnt.target;
-    while (inputFields.length <= index) {
-      inputFields.push({});
-    }
-    const list = [...inputFields];
+    const list = [...selectedMachines];
     list[index][name] = value;
     list[index]["machineId"] = data.machineId;
     list[index]["nozzleId"] = data._id;
-    setInputFields(list);
+    const sumdata = CountSum(list[index]); 
+    list[index]['totalSale'] = sumdata.totalSale
+    list[index]['amount'] = sumdata.amount
+    setSelectedMachines(list);
+  };
+
+  const CountSum = (data) => {
+    let totalSale = 0;
+    let amount = 0;
+    let testing = 0;
+    totalSale = parseInt(data.closing) - parseInt(data.opening);
+    totalSale = totalSale - parseInt(data.testing) 
+    amount = parseFloat(data.rate) * totalSale;
+    return { totalSale, amount };
   };
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -112,7 +137,7 @@ const Collection = () => {
       date: input.date,
       shiftId: shiftId,
       employeeId: employeeId,
-      machine: inputFields,
+      machine: selectedMachines,
     };
     await dispatch(HandleCreateReport(data))
       .then(async (result) => {
@@ -139,7 +164,6 @@ const Collection = () => {
         dispatch(CloseLoader(false));
         console.log(err, "Edit ERROR");
       });
-    console.log("🚀 ~ handleSubmit ~ data:", data);
   };
   const handleData = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
@@ -341,6 +365,7 @@ const Collection = () => {
                                   type="number"
                                   required
                                   className="block w-40 text-[#6e6e6e] dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
+                                  value={nozzle?.opening || ""}
                                   onChange={(e) => {
                                     handleChange(index, e, nozzle);
                                   }}
@@ -352,6 +377,7 @@ const Collection = () => {
                                   type="number"
                                   required
                                   className="block w-20 text-[#6e6e6e] dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0 shadow-none rounded-md bg-white"
+                                  value={nozzle?.testing || ""}
                                   onChange={(e) => {
                                     handleChange(index, e, nozzle);
                                   }}
@@ -368,9 +394,15 @@ const Collection = () => {
                                   }}
                                 />
                               </td>
-                              <td className="whitespace-nowrap py-1.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-300 sm:pl-3"></td>
-                              <td className="whitespace-nowrap py-1.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-300 sm:pl-3"></td>
-                              <td className="whitespace-nowrap py-1.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-300 sm:pl-3"></td>
+                              <td className="whitespace-nowrap text-center w-40 py-1.5 pl-4 pr-3 text-sm font-bold text-gray-900 dark:text-gray-300 sm:pl-3">
+                                {formatCurrency(nozzle?.totalSale, 'INR')}
+                              </td>
+                              <td className="whitespace-nowrap text-center py-1.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-300 sm:pl-3">
+                                {nozzle?.rate}
+                              </td>
+                              <td className="whitespace-nowrap text-center py-1.5 pl-4 pr-3 text-sm font-bold text-gray-900 dark:text-gray-300 sm:pl-3">
+                                {formatCurrency(nozzle?.amount, 'INR')}
+                              </td>
                             </tr>
                           );
                         })}
