@@ -1,6 +1,8 @@
 import Pagination from "@/components/Pagination/Pagination";
+import AddCreditParty from "@/components/admin/AddCreditParty";
 import AddRate from "@/components/admin/AddRate";
 import NoData from "@/components/admin/NoData";
+import { GetCreditParty } from "@/redux/action/credit";
 import { GetRate } from "@/redux/action/rate";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
@@ -11,18 +13,18 @@ import { useDispatch, useSelector } from "react-redux";
 const Credit = () => {
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
-  const CreditList = useSelector((state) => state?.Credit?.creditlist);
+  const PartytList = useSelector((state) => state?.Party?.partylist);
   const [editRate, setEditRate] = useState();
   const [customersData, setCustomersData] = useState({});
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    dispatch(GetRate(page));
+    dispatch(GetCreditParty(page));
   }, [page]);
 
   useEffect(() => {
-    setCustomersData(CreditList);
-  }, [CreditList]);
+    setCustomersData(PartytList);
+  }, [PartytList]);
 
   return (
     <>
@@ -33,14 +35,14 @@ const Credit = () => {
         }}
         className="text-white bg-gray500 hover:bg-dark700 transition duration-300 py-1.5 px-5 rounded ml-auto mr-[40px] flex"
       >
-        Add Today Rate
+        Add Credit Party
       </button>
-      <AddRate setOpen={setOpen} open={open} editrate={editRate} />
+      <AddCreditParty setView={setOpen} view={open} editEmployee={editRate} />
       {customersData?.data?.length > 0 ? (
         <div className="px-6 sm:px-10">
           <div>
             <h4 className="text-[24px] dark:text-white font-medium text-gray-900">
-              Rates
+              Credit Party
             </h4>
           </div>
           <div className="mt-8 bg-white dark:bg-[#0c1a32] rounded-md shadow-sm flow-root">

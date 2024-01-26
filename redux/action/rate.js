@@ -70,3 +70,24 @@ export const HandleEditRate = (id, data) => {
     }
   };
 };
+
+export const HandleDateRate = (date) => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.get(`${URL}/rate/get?date=${date}`, {
+        headers: {
+          authorization: localStorage.getItem("authorization"),
+        },
+      });
+      return dispatch({
+        type: "DATE_RATE",
+        payload: response,
+      });
+    } catch (err) {
+      return dispatch({
+        type: "SET_LOADING",
+        payload: err.response,
+      });
+    }
+  };
+};

@@ -4,12 +4,18 @@ import { CloseLoader, OpenLoader } from "@/redux/action/loader";
 import { useRouter } from "next/router";
 import { GetShift } from "@/redux/action/shift";
 import { GetMachine } from "@/redux/action/machine";
-import { GetRate } from "@/redux/action/rate";
+import { GetRate, HandleDateRate } from "@/redux/action/rate";
 import { GetEmployee } from "@/redux/action/employee";
 import { GetReport, HandleCreateReport } from "@/redux/action/dailyReport";
 import { toast } from "react-toastify";
 import { GetTank } from "@/redux/action/tank";
 import { formatCurrency } from "@/utils/formatCurrency";
+import { GetCreditParty } from "@/redux/action/credit";
+import { GetProduct } from "@/redux/action/product";
+import { MdAddCircleOutline } from "react-icons/md";
+import { TbTrash } from "react-icons/tb";
+import { RiErrorWarningFill } from "react-icons/ri";
+import { HandleTotalSum } from "@/utils/handleTotal";
 
 const Collection = () => {
   const dispatch = useDispatch();
@@ -17,16 +23,65 @@ const Collection = () => {
   const EmployeeList = useSelector(
     (state) => state?.Employee?.employeelist.data
   );
-  const RateList = useSelector((state) => state?.Rate?.ratelist?.data);
   const MachineList = useSelector((state) => state?.Machine?.machinelist.data);
   const ShiftList = useSelector((state) => state?.Shift?.shiftlist.data);
   const Report = useSelector((state) => state?.Report?.reportlist.data);
   const TankList = useSelector((state) => state?.Tank?.tanklist.data);
+  const ProductList = useSelector((state) => state?.Product?.productlist.data);
+  const PartyList = useSelector((state) => state?.Party?.partylist.data);
 
   const [selectedMachines, setSelectedMachines] = useState([]);
   const [inputFields, setInputFields] = useState([{}]);
   const [input, setInput] = useState({});
   const idRef = useRef([]);
+  const [Rate, setRate] = useState({});
+  const [creditInput, setCreditInput] = useState([]);
+  const [productInput, setProductInput] = useState([]);
+    
+  useEffect(() => {
+    dispatch(HandleDateRate(input.date)).then((result) => {
+      if (result.payload) {
+        setRate(result?.payload?.data?.result);
+      }
+    });
+  }, [input.date]);
+
+  useEffect(() => {
+    if (selectedMachines.length > 0) {
+      const updatedSelectedMachines = selectedMachines.map((machine) => {
+        const tank = TankList.find(
+          (T) => T._id.toString() === machine.tankId.toString()
+        );
+        if (tank) {
+          let rate;
+          if (tank.type === "MS") {
+            rate = Rate?.msRate || 0;
+          } else {
+            rate = Rate?.hsdRate || 0;
+          }
+          return {
+            ...machine,
+            rate: rate,
+          };
+        }
+        return machine;
+      });
+
+      setSelectedMachines(updatedSelectedMachines);
+    }
+    if (creditInput.length > 0) {
+      const updatedcredit = creditInput.map((credit) => {
+        if (credit.product === 'MS') {
+          credit.rate = Rate?.msRate || 0;
+        }
+        else {
+          credit.rate = Rate?.hsdRate || 0;
+        }
+        return credit
+      })
+      setCreditInput(updatedcredit)
+    }
+  }, [Rate]);
 
   const handleCheckboxChange = async (machine) => {
     let id = [];
@@ -50,18 +105,18 @@ const Collection = () => {
           (T) => T._id.toString() === item.tankId.toString()
         );
         if (tank) {
-          let Rate;
+          let rate;
           if (tank.type === "MS") {
-            Rate = RateList[0].msRate;
+            rate = Rate?.msRate || 0;
           } else {
-            Rate = RateList[0].hsdRate;
+            rate = Rate?.hsdRate || 0;
           }
           return {
             machineId: machine._id,
             machineName: machine.name,
             machineType: machine.type,
             tankType: tank.type,
-            rate: Rate,
+            rate: rate,
             ...item,
           };
         }
@@ -93,11 +148,13 @@ const Collection = () => {
   };
 
   useEffect(() => {
-    dispatch(GetShift(1));
-    dispatch(GetMachine(1));
-    dispatch(GetRate(1));
-    dispatch(GetEmployee(1));
-    dispatch(GetTank(1));
+    dispatch(GetShift("all"));
+    dispatch(GetMachine("all"));
+    dispatch(GetRate("all"));
+    dispatch(GetEmployee("all"));
+    dispatch(GetTank("all"));
+    dispatch(GetCreditParty("all"));
+    dispatch(GetProduct("all"));
   }, []);
 
   const removeInputFields = (index) => {
@@ -106,15 +163,15 @@ const Collection = () => {
     setInputFields(rows);
   };
 
-  const handleChange = (index, evnt, data) => {
+  const handleChange = async (index, evnt, data) => {
     const { name, value } = evnt.target;
     const list = [...selectedMachines];
     list[index][name] = value;
     list[index]["machineId"] = data.machineId;
     list[index]["nozzleId"] = data._id;
-    const sumdata = CountSum(list[index]); 
-    list[index]['totalSale'] = sumdata.totalSale
-    list[index]['amount'] = sumdata.amount
+    const sumdata = await CountSum(list[index]);
+    list[index]["totalSale"] = sumdata.totalSale;
+    list[index]["amount"] = sumdata.amount;
     setSelectedMachines(list);
   };
 
@@ -123,7 +180,7 @@ const Collection = () => {
     let amount = 0;
     let testing = 0;
     totalSale = parseInt(data.closing) - parseInt(data.opening);
-    totalSale = totalSale - parseInt(data.testing) 
+    totalSale = totalSale - parseInt(data.testing);
     amount = parseFloat(data.rate) * totalSale;
     return { totalSale, amount };
   };
@@ -136,8 +193,11 @@ const Collection = () => {
     const data = {
       date: input.date,
       shiftId: shiftId,
+      shiftName: shiftName,
       employeeId: employeeId,
       machine: selectedMachines,
+      productSale: productInput,
+      creditSale: creditInput
     };
     await dispatch(HandleCreateReport(data))
       .then(async (result) => {
@@ -168,6 +228,50 @@ const Collection = () => {
   const handleData = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
+  const handleCedit = (index, evnt) => {
+    const { name, value } = evnt.target;
+    const list = [...creditInput];
+    list[index][name] = value;
+    if (name === "name") {
+      const [id, name] = value.split(",");
+      const data = PartyList.find((ids) => ids._id === id);
+      list[index]["vehicleList"] = data.vehicle;
+      list[index]['name'] = name;
+      list[index]['partyId'] = id
+    }
+    if (name === 'vnumber') {
+      const [id, name] = value.split(",");
+      list[index]['vname'] = name;
+      list[index]['vnumber'] = id
+    }
+    if (name === "product") {
+      list[index]["rate"] = value === "MS" ? Rate?.msRate : Rate?.hsdRate;
+      list[index]["amount"] = list[index].rate * list[index].qty;
+    }
+    if (name === "qty") {
+      list[index]["amount"] = list[index].rate * list[index].qty;
+    }
+    setCreditInput(list);
+  };
+  const handleProduct = (index, event) => {
+    const { name, value } = event.target;
+    const list = [...productInput]
+    list[index][name] = value;
+    if (name === "name") {
+      const [id, name] = value.split(",");
+      const data = ProductList.find((ids) => ids._id === id);
+      list[index]["price"] = data.price;
+      list[index]['name'] = name
+      list[index]['productId'] = id
+    }
+    if (name === "qty") {
+      list[index]["amount"] = list[index].price * list[index].qty;
+    }
+    setProductInput(list)
+  }
+  const productSum = HandleTotalSum(productInput, 'product')
+  const credittSum = HandleTotalSum(creditInput, 'creditparty')
+  const nozzleSum = HandleTotalSum(selectedMachines, 'nozzle')
 
   return (
     <div className="px-6 sm:px-10">
@@ -176,6 +280,16 @@ const Collection = () => {
       </h4>
       <div className="bg-white dark:bg-[#0c1a32] inline-block min-w-full mt-8 rounded-md shadow-sm align-middle p-4 sm:p-6 lg:p-8">
         <div>
+          {!Rate && (
+            <div className="flex gap-4 mb-4">
+              <button className="hover:text-red-700  text-red-400 trnasition duration-200 ease-in outline-none focus:outline-none">
+                <RiErrorWarningFill className="text-[18px]" />
+              </button>
+              <h1 className="text-red-600">
+                Rate is not available please Select new Date.
+              </h1>
+            </div>
+          )}
           <form
             action="#"
             method="POST"
@@ -218,7 +332,6 @@ const Collection = () => {
                       className="block w-full px-6 text-[#6e6e6e] rounded-md dark:text-gray-300 border border-[#f0f1f5] dark:bg-[#20304c] focus:border-orange transition duration-300 focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
                       onChange={(e) => {
                         handleData(e);
-                        // setCategoryId(e.target.value);
                       }}
                     >
                       <option name="Shift">Please select Shift</option>
@@ -377,7 +490,7 @@ const Collection = () => {
                                   type="number"
                                   required
                                   className="block w-20 text-[#6e6e6e] dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0 shadow-none rounded-md bg-white"
-                                  value={nozzle?.testing || ""}
+                                  value={nozzle?.testing || 1}
                                   onChange={(e) => {
                                     handleChange(index, e, nozzle);
                                   }}
@@ -395,13 +508,13 @@ const Collection = () => {
                                 />
                               </td>
                               <td className="whitespace-nowrap text-center w-40 py-1.5 pl-4 pr-3 text-sm font-bold text-gray-900 dark:text-gray-300 sm:pl-3">
-                                {formatCurrency(nozzle?.totalSale, 'INR')}
+                                {formatCurrency(nozzle?.totalSale, "INR")}
                               </td>
                               <td className="whitespace-nowrap text-center py-1.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-300 sm:pl-3">
                                 {nozzle?.rate}
                               </td>
                               <td className="whitespace-nowrap text-center py-1.5 pl-4 pr-3 text-sm font-bold text-gray-900 dark:text-gray-300 sm:pl-3">
-                                {formatCurrency(nozzle?.amount, 'INR')}
+                                {formatCurrency(nozzle?.amount, "INR")}
                               </td>
                             </tr>
                           );
@@ -414,124 +527,280 @@ const Collection = () => {
             )}
             {/* Inventory Product Sale Details */}
             <div className="mt-8 bg-white dark:bg-[#0c1a32] rounded-md shadow-sm flow-root">
-              <label className="block leading-6 text-lg font-bold text-gray-900">
-                Inventory Product Sale Details
-              </label>
-              <div className="overflow-x-auto ">
-                <div className="inline-block min-w-full pt-2 align-middle">
-                  <table className="min-w-[50%] divide-y dark:divide-gray-600 divide-gray-300">
-                    <thead>
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
-                        >
-                          Product
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 w-40 dark:text-white text-right text-sm font-semibold text-gray-900"
-                        >
-                          Qty
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 dark:text-white text-right text-sm font-semibold text-gray-900"
-                        >
-                          Rate
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 dark:text-white text-right text-sm font-semibold text-gray-900"
-                        >
-                          Amount
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="dark:bg-[#0c1a32] bg-white">
-                      <tr className={"bg-gray-50  dark:bg-[#20304c]"}>
-                        <td className="whitespace-nowrap text-left pl-4 text-sm font-medium text-gray-900 dark:text-gray-300">
-                          Demo
-                        </td>
-                        <td className="whitespace-nowrap w-full flex justify-end text-right py-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                          <input
-                            id="date"
-                            name="date"
-                            type="number"
-                            required
-                            className="block text-[#6e6e6e] w-20 dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
-                          />
-                        </td>
-                        <td className="whitespace-nowrap text-right py-2 pr-4 text-sm font-medium text-gray-900 dark:text-gray-300">
-                          34
-                        </td>
-                        <td className="whitespace-nowrap text-right py-2 pr-4 text-sm font-medium text-gray-900 dark:text-gray-300">
-                          3423
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+              <div className="flex gap-3">
+                <label className="block leading-6 text-lg font-bold text-gray-900">
+                  Inventory Product Sale Details
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setProductInput([])}
+                  className="text-[20px]  text-red-500 hover:text-red-700 trnasition ease-in duration-300 "
+                >
+                  <TbTrash />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProductInput([...productInput, {}])}
+                  className="text-[20px] text-blue-500 hover:text-blue-700 trnasition ease-in duration-300  outline-none"
+                >
+                  <MdAddCircleOutline />
+                </button>
               </div>
+              {productInput?.length > 0 &&
+                <div className="overflow-x-auto ">
+                  <div className="inline-block min-w-full pt-2 align-middle">
+                    <table className="min-w-[50%] divide-y dark:divide-gray-600 divide-gray-300">
+                      <thead>
+                        <tr>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
+                          >
+                            Product
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 w-40 dark:text-white text-right text-sm font-semibold text-gray-900"
+                          >
+                            Qty
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 dark:text-white text-right text-sm font-semibold text-gray-900"
+                          >
+                            Rate
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 dark:text-white text-right text-sm font-semibold text-gray-900"
+                          >
+                            Amount
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="dark:bg-[#0c1a32] bg-white">
+                        {productInput && productInput.map((item, index) => {
+                          return (
+                            <tr className={"bg-gray-50  dark:bg-[#20304c]"}>
+                              <td className="whitespace-nowrap pl-4 text-sm py-2 font-medium text-gray-900 dark:text-gray-300">
+                                <select
+                                  id="name"
+                                  name="name"
+                                  required
+                                  className="block w-full px-6 text-[#6e6e6e] rounded-md dark:text-gray-300 border border-[#f0f1f5] dark:bg-[#20304c] focus:border-orange transition duration-300 focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
+                                  onChange={(e) => {
+                                    handleProduct(index, e);
+                                  }}
+                                >
+                                  <option selected disabled>
+                                    Select..
+                                  </option>
+                                  {ProductList?.length > 0 &&
+                                    ProductList?.map((item) => {
+                                      const value = `${item._id},${item.name}`;
+                                      return (
+                                        <option name="name" value={value}>
+                                          {item.name}
+                                        </option>
+                                      );
+                                    })}
+                                </select>
+                              </td>
+                              <td className="whitespace-nowrap w-full flex justify-end text-right py-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                <input
+                                  id="qty"
+                                  name="qty"
+                                  type="number"
+                                  required
+                                  className="block text-[#6e6e6e] w-20 dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
+                                  onChange={(e) => {
+                                    handleProduct(index, e);
+                                  }}
+                                />
+                              </td>
+                              <td className="whitespace-nowrap text-right py-2 pr-4 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                {item.price}
+                              </td>
+                              <td className="whitespace-nowrap text-right py-2 pr-4 text-sm font-bold text-gray-900 dark:text-gray-300">
+                                {formatCurrency(item?.amount, "INR")}
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              }
             </div>
             {/* Credit Sale */}
+
             <div className="mt-8 bg-white dark:bg-[#0c1a32] rounded-md shadow-sm flow-root">
-              <label className="block leading-6 text-lg font-bold text-gray-900">
-                Credit Sale
-              </label>
-              <div className="overflow-x-auto ">
-                <div className="inline-block min-w-full pt-2 align-middle">
-                  <table className="min-w-full divide-y dark:divide-gray-600 divide-gray-300">
-                    <thead>
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
-                        >
-                          Party
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
-                        >
-                          Vehicle No.
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
-                        >
-                          Product
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
-                        >
-                          Qty
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
-                        >
-                          Rate
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
-                        >
-                          Amount
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
-                        >
-                          Ch. No.
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="dark:bg-[#0c1a32] bg-white"></tbody>
-                  </table>
-                </div>
+              <div className="flex gap-3">
+                <label className="block leading-6 text-lg font-bold text-gray-900">
+                  Credit Sale
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setCreditInput([])}
+                  className="text-[20px]  text-red-500 hover:text-red-700 trnasition ease-in duration-300 "
+                >
+                  <TbTrash />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCreditInput([...creditInput, {}])}
+                  className="text-[20px] text-blue-500 hover:text-blue-700 trnasition ease-in duration-300  outline-none"
+                >
+                  <MdAddCircleOutline />
+                </button>
               </div>
+              {creditInput.length > 0 && (
+                <div className="overflow-x-auto ">
+                  <div className="inline-block min-w-full pt-2 align-middle">
+                    <table className="min-w-full divide-y dark:divide-gray-600 divide-gray-300">
+                      <thead>
+                        <tr>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
+                          >
+                            Party
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
+                          >
+                            Vehicle No.
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
+                          >
+                            Product
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
+                          >
+                            Qty
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
+                          >
+                            Rate
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
+                          >
+                            Amount
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 dark:text-white text-center text-sm font-semibold text-gray-900"
+                          >
+                            Ch. No.
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="dark:bg-[#0c1a32] bg-white">
+                        {creditInput &&
+                          creditInput.map((party, index) => {
+                            return (
+                              <tr className={"bg-gray-50  dark:bg-[#20304c]"}>
+                                <td className="whitespace-nowrap text-left pl-4 text-sm py-2 font-medium text-gray-900 dark:text-gray-300">
+                                  <select
+                                    id="name"
+                                    name="name"
+                                    required
+                                    className="block w-full px-6 text-[#6e6e6e] rounded-md dark:text-gray-300 border border-[#f0f1f5] dark:bg-[#20304c] focus:border-orange transition duration-300 focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
+                                    onChange={(e) => {
+                                      handleCedit(index, e);
+                                    }}
+                                  >
+                                    <option selected disabled>
+                                      Select..
+                                    </option>
+                                    {PartyList?.length > 0 &&
+                                      PartyList?.map((item) => {
+                                        const value = `${item._id},${item.name}`;
+                                        return (
+                                          <option name="Shift" value={value}>
+                                            {item.name}
+                                          </option>
+                                        );
+                                      })}
+                                  </select>
+                                </td>
+                                <td className="whitespace-nowrap w-[19%] text-left pl-4 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                  <select
+                                    id="vnumber"
+                                    name="vnumber"
+                                    required
+                                    className="block w-full px-6 text-[#6e6e6e] rounded-md dark:text-gray-300 border border-[#f0f1f5] dark:bg-[#20304c] focus:border-orange transition duration-300 focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
+                                    onChange={(e) => {
+                                      handleCedit(index, e);
+                                    }}
+                                  >
+                                    <option selected disabled>
+                                      Select..
+                                    </option>
+                                    {party?.vehicleList?.length > 0 &&
+                                      party?.vehicleList?.map((item) => {
+                                        const value = `${item.vnumber},${item.type}`;
+                                        return (
+                                          <option name="Shift" value={value}>
+                                            {item.type} {item.vnumber}
+                                          </option>
+                                        );
+                                      })}
+                                  </select>
+                                </td>
+                                <td className="whitespace-nowrap w-[12%] text-left pl-4 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                  <select
+                                    id="product"
+                                    name="product"
+                                    required
+                                    className="block w-full px-6 text-[#6e6e6e] rounded-md dark:text-gray-300 border border-[#f0f1f5] dark:bg-[#20304c] focus:border-orange transition duration-300 focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
+                                    onChange={(e) => {
+                                      handleCedit(index, e);
+                                    }}
+                                  >
+                                    <option selected disabled>
+                                      Select..
+                                    </option>
+                                    <option value="MS">MS</option>
+                                    <option value="HSD">HSD</option>
+                                  </select>
+                                </td>
+                                <td className="whitespace-nowrap w-32 text-center pl-4 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                  <input
+                                    id="qty"
+                                    name="qty"
+                                    type="number"
+                                    required
+                                    onChange={(e) => {
+                                      handleCedit(index, e);
+                                    }}
+                                    className="block text-[#6e6e6e] w-32 dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
+                                  />
+                                </td>
+                                <td className="whitespace-nowrap text-center py-2 pr-4 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                  {party.rate || 0}
+                                </td>
+                                <td className="whitespace-nowrap py-2 text-center pr-4 text-sm font-bold text-gray-900 dark:text-gray-300">
+                                  {formatCurrency(party?.amount, "INR") || 0}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
             {/* Save Button */}
             <div className="w-full mt-12 flex gap-4">

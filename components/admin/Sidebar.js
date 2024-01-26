@@ -72,6 +72,14 @@ const navigation = [
     icon: faChartColumn,
     current: false,
   },
+  { name: "Product", href: "/admin/product", icon: faBowlFood, current: false },
+  {
+    name: "Credit Party",
+    href: "/admin/credit",
+    icon: faChartColumn,
+    current: false,
+  },
+
 ];
 
 function classNames(...classes) {

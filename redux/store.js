@@ -17,6 +17,7 @@ const persistConfig = {
     "Upi",
     "Shift",
     "Report",
+    "Party",
     
     "GetMenu",
     "StoraSideBarData",
