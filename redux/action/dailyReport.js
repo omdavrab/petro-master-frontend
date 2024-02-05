@@ -44,3 +44,25 @@ export const GetReport = (id) => {
     }
   };
 };
+
+// Date wish
+export const GetDateReport = (date) => {
+  return async (dispatch) => {
+    try {
+      const response = await axios.get(`${URL}/report?date=${date}`, {
+        headers: {
+          authorization: localStorage.getItem("authorization"),
+        },
+      });
+      return dispatch({
+        type: "DATE_REPORT",
+        payload: response?.data,
+      });
+    } catch (err) {
+      return dispatch({
+        type: "SET_LOADING",
+        payload: err.response,
+      });
+    }
+  };
+};

@@ -1,10 +1,4 @@
- // Total
- let TotalPetrol = 0.0
- let TotalDiesel = 0.0
- let TotalPetrolAmount = 0.0
- let TotalDieselAmount = 0.0
- let TotalAmount = 0.0
- 
+
 export function HandleTotalSum(props, type) {
   // Product
   let ProductSaleAmount = 0.0
@@ -20,44 +14,37 @@ export function HandleTotalSum(props, type) {
   let TotalNozzleDiesel = 0.0
   let TotalNozzleDieselAmount = 0.0
   let TotalNozzleAmount = 0.0
+  
   props?.map((item, index) => {
-    console.log("🚀 ~ props?.map ~ item:", item)
     // Total product sale
     if (type === 'product') {
-      ProductSaleAmount += parseInt(item.amount, 10)
+      ProductSaleAmount += parseFloat(item.amount || 0)
     }
     // Credit Party
     if (type === 'creditparty') {
       if (item.product === 'MS') {
-        TotalCreditPetrol += parseInt(item.qty, 10)
-        TotalCreditPetrolAmount += parseInt(item.amount, 10)
+        TotalCreditPetrol += parseInt(item.qty || 0, 10)
+        TotalCreditPetrolAmount += parseInt(item.amount || 0, 10)
       } else {
-        TotalCreditDiesel += parseInt(item.qty, 10)
-        TotalCreditDieselAmount += parseInt(item.amount, 10)
+        TotalCreditDiesel += parseInt(item.qty || 0, 10)
+        TotalCreditDieselAmount += parseInt(item.amount || 0, 10)
       }
-      TotalCreditPartyAmount += parseInt(item.amount, 10)
+      TotalCreditPartyAmount += parseFloat(item.amount || 0)
     }
     // Nozzle
     if (type === 'nozzle') {
       if (item.tankType === 'MS') {
-        TotalNozzlePetrol += parseInt(item.totalSale)
-        TotalNozzlePetrolAmount += parseInt(item.amount)
+        TotalNozzlePetrol += parseInt(item.totalSale || 0)
+        TotalNozzlePetrolAmount += parseInt(item.amount || 0)
       } else {
-        TotalNozzleDiesel += parseInt(item.totalSale)
-        TotalNozzleDieselAmount += parseInt(item.amount)
+        TotalNozzleDiesel += parseInt(item.totalSale || 0)
+        TotalNozzleDieselAmount += parseInt(item.amount || 0)
       }
-      TotalNozzleAmount += parseInt(item.amount)
+      TotalNozzleAmount += parseFloat(item.amount || 0)
     }
-    // Total
-    TotalPetrol = TotalNozzlePetrol + TotalCreditPetrol
-    TotalDiesel = TotalNozzleDiesel + TotalCreditDiesel 
-    TotalPetrolAmount =  TotalNozzlePetrolAmount + TotalCreditPetrolAmount
-    TotalDieselAmount = TotalNozzleDieselAmount + TotalCreditDieselAmount
-    TotalAmount = TotalNozzleAmount + TotalCreditPartyAmount
   });
-  const Total = { TotalPetrol, TotalDiesel, TotalPetrolAmount, TotalDieselAmount, TotalAmount }
   const nozzle = { TotalNozzlePetrol, TotalNozzlePetrolAmount, TotalNozzleDiesel, TotalNozzleDieselAmount, TotalNozzleAmount }
   const product = { ProductSaleAmount }
   const creditParty = { TotalCreditPetrol, TotalCreditPetrolAmount, TotalCreditDiesel, TotalCreditDieselAmount, TotalCreditPartyAmount }
-  return { product, creditParty, nozzle, Total };
+  return { product, creditParty, nozzle };
 }

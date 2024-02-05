@@ -16,6 +16,31 @@ import { MdAddCircleOutline } from "react-icons/md";
 import { TbTrash } from "react-icons/tb";
 import { RiErrorWarningFill } from "react-icons/ri";
 import { HandleTotalSum } from "@/utils/handleTotal";
+import Image from "next/image";
+import CollectionSummary from "@/components/admin/CollectionSummary";
+
+const generateDummyData = () => {
+  return [
+    {
+      nozzle: "1-A-MS",
+      name: "Jaydeep",
+      opening: 15240,
+      test: 5,
+      closing: 154289,
+      tSale: 587894654,
+      rate: 54.23,
+      amount: 1254585,
+      payTm: 4561,
+      icic: 54.23,
+      cash: 54.23,
+      coine: 54.23,
+      credit: 54.23,
+      different: 54.23,
+      oil: 54.23,
+      upda: "54.23",
+    },
+  ];
+};
 
 const Collection = () => {
   const dispatch = useDispatch();
@@ -37,7 +62,9 @@ const Collection = () => {
   const [Rate, setRate] = useState({});
   const [creditInput, setCreditInput] = useState([]);
   const [productInput, setProductInput] = useState([]);
-    
+  const [data, setData] = useState(generateDummyData());
+  const [collection, setCollection] = useState({ cash: "", online: "" });
+
   useEffect(() => {
     dispatch(HandleDateRate(input.date)).then((result) => {
       if (result.payload) {
@@ -71,15 +98,14 @@ const Collection = () => {
     }
     if (creditInput.length > 0) {
       const updatedcredit = creditInput.map((credit) => {
-        if (credit.product === 'MS') {
+        if (credit.product === "MS") {
           credit.rate = Rate?.msRate || 0;
-        }
-        else {
+        } else {
           credit.rate = Rate?.hsdRate || 0;
         }
-        return credit
-      })
-      setCreditInput(updatedcredit)
+        return credit;
+      });
+      setCreditInput(updatedcredit);
     }
   }, [Rate]);
 
@@ -101,6 +127,9 @@ const Collection = () => {
     } else {
       idRef.current = idRef.current.concat(machine._id);
       const updatedMachine = machine.nozzles.map((item) => {
+        const sumdata = CountSum(item);
+        item.totalSale = sumdata.totalSale;
+        item.amount = sumdata.amount;
         const tank = TankList.find(
           (T) => T._id.toString() === item.tankId.toString()
         );
@@ -136,7 +165,7 @@ const Collection = () => {
                     d.nozzleId === item._id
                   ) {
                     item.opening = d?.closing;
-                    item.testing = 1;
+                    // item.testing = 1;
                   }
                 });
               });
@@ -169,6 +198,7 @@ const Collection = () => {
     list[index][name] = value;
     list[index]["machineId"] = data.machineId;
     list[index]["nozzleId"] = data._id;
+    list[index]["nozzle"] = data.nozzle;
     const sumdata = await CountSum(list[index]);
     list[index]["totalSale"] = sumdata.totalSale;
     list[index]["amount"] = sumdata.amount;
@@ -179,16 +209,16 @@ const Collection = () => {
     let totalSale = 0;
     let amount = 0;
     let testing = 0;
-    totalSale = parseInt(data.closing) - parseInt(data.opening);
-    totalSale = totalSale - parseInt(data.testing);
-    amount = parseFloat(data.rate) * totalSale;
+    totalSale = parseInt(data.closing || 0) - parseInt(data.opening || 0);
+    totalSale = totalSale - parseInt(data.testing || 0);
+    amount = parseFloat(data.rate || 0) * totalSale;
     return { totalSale, amount };
   };
   const handleSubmit = async (event) => {
     event.preventDefault();
     dispatch(OpenLoader(true));
-    const [employeeId, employeeName] = input.employeeId.split(",");
-    const [shiftId, shiftName] = input.shiftId.split(",");
+    const [employeeId, employeeName] = input?.employeeId?.split(",");
+    const [shiftId, shiftName] = input?.shiftId?.split(",");
 
     const data = {
       date: input.date,
@@ -197,7 +227,13 @@ const Collection = () => {
       employeeId: employeeId,
       machine: selectedMachines,
       productSale: productInput,
-      creditSale: creditInput
+      creditSale: creditInput,
+      totalCollection : collection.TotalCollection,
+      totalcash : collection.cash,
+      totalCreditSale : collection.CreditSum,
+      totalOnlinePayment : collection.online,
+      totalProductSale : collection.productSum,
+      totalDifferent : collection.TotalDifferent
     };
     await dispatch(HandleCreateReport(data))
       .then(async (result) => {
@@ -236,13 +272,13 @@ const Collection = () => {
       const [id, name] = value.split(",");
       const data = PartyList.find((ids) => ids._id === id);
       list[index]["vehicleList"] = data.vehicle;
-      list[index]['name'] = name;
-      list[index]['partyId'] = id
+      list[index]["name"] = name;
+      list[index]["partyId"] = id;
     }
-    if (name === 'vnumber') {
+    if (name === "vnumber") {
       const [id, name] = value.split(",");
-      list[index]['vname'] = name;
-      list[index]['vnumber'] = id
+      list[index]["vname"] = name;
+      list[index]["vnumber"] = id;
     }
     if (name === "product") {
       list[index]["rate"] = value === "MS" ? Rate?.msRate : Rate?.hsdRate;
@@ -255,23 +291,28 @@ const Collection = () => {
   };
   const handleProduct = (index, event) => {
     const { name, value } = event.target;
-    const list = [...productInput]
+    const list = [...productInput];
     list[index][name] = value;
     if (name === "name") {
       const [id, name] = value.split(",");
       const data = ProductList.find((ids) => ids._id === id);
       list[index]["price"] = data.price;
-      list[index]['name'] = name
-      list[index]['productId'] = id
+      list[index]["name"] = name;
+      list[index]["productId"] = id;
     }
     if (name === "qty") {
-      list[index]["amount"] = list[index].price * list[index].qty;
+      list[index]["amount"] = list[index].price* list[index].qty;
     }
-    setProductInput(list)
-  }
-  const productSum = HandleTotalSum(productInput, 'product')
-  const credittSum = HandleTotalSum(creditInput, 'creditparty')
-  const nozzleSum = HandleTotalSum(selectedMachines, 'nozzle')
+    setProductInput(list);
+  };
+  const productSum = HandleTotalSum(productInput, "product");
+  const credittSum = HandleTotalSum(creditInput, "creditparty");
+  const nozzleSum = HandleTotalSum(selectedMachines, "nozzle");
+// TotalCollection
+  const TotalCollection =
+    productSum.product.ProductSaleAmount +
+    credittSum.creditParty.TotalCreditPartyAmount +
+    nozzleSum.nozzle.TotalNozzleAmount;
 
   return (
     <div className="px-6 sm:px-10">
@@ -488,9 +529,9 @@ const Collection = () => {
                                 <input
                                   name="testing"
                                   type="number"
-                                  required
+                                  // required
                                   className="block w-20 text-[#6e6e6e] dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0 shadow-none rounded-md bg-white"
-                                  value={nozzle?.testing || 1}
+                                  value={nozzle?.testing}
                                   onChange={(e) => {
                                     handleChange(index, e, nozzle);
                                   }}
@@ -540,13 +581,13 @@ const Collection = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setProductInput([...productInput, {}])}
+                  onClick={() => setProductInput([...productInput, {amount: '0'}])}
                   className="text-[20px] text-blue-500 hover:text-blue-700 trnasition ease-in duration-300  outline-none"
                 >
                   <MdAddCircleOutline />
                 </button>
               </div>
-              {productInput?.length > 0 &&
+              {productInput?.length > 0 && (
                 <div className="overflow-x-auto ">
                   <div className="inline-block min-w-full pt-2 align-middle">
                     <table className="min-w-[50%] divide-y dark:divide-gray-600 divide-gray-300">
@@ -579,62 +620,62 @@ const Collection = () => {
                         </tr>
                       </thead>
                       <tbody className="dark:bg-[#0c1a32] bg-white">
-                        {productInput && productInput.map((item, index) => {
-                          return (
-                            <tr className={"bg-gray-50  dark:bg-[#20304c]"}>
-                              <td className="whitespace-nowrap pl-4 text-sm py-2 font-medium text-gray-900 dark:text-gray-300">
-                                <select
-                                  id="name"
-                                  name="name"
-                                  required
-                                  className="block w-full px-6 text-[#6e6e6e] rounded-md dark:text-gray-300 border border-[#f0f1f5] dark:bg-[#20304c] focus:border-orange transition duration-300 focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
-                                  onChange={(e) => {
-                                    handleProduct(index, e);
-                                  }}
-                                >
-                                  <option selected disabled>
-                                    Select..
-                                  </option>
-                                  {ProductList?.length > 0 &&
-                                    ProductList?.map((item) => {
-                                      const value = `${item._id},${item.name}`;
-                                      return (
-                                        <option name="name" value={value}>
-                                          {item.name}
-                                        </option>
-                                      );
-                                    })}
-                                </select>
-                              </td>
-                              <td className="whitespace-nowrap w-full flex justify-end text-right py-2 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                <input
-                                  id="qty"
-                                  name="qty"
-                                  type="number"
-                                  required
-                                  className="block text-[#6e6e6e] w-20 dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
-                                  onChange={(e) => {
-                                    handleProduct(index, e);
-                                  }}
-                                />
-                              </td>
-                              <td className="whitespace-nowrap text-right py-2 pr-4 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                {item.price}
-                              </td>
-                              <td className="whitespace-nowrap text-right py-2 pr-4 text-sm font-bold text-gray-900 dark:text-gray-300">
-                                {formatCurrency(item?.amount, "INR")}
-                              </td>
-                            </tr>
-                          )
-                        })}
+                        {productInput &&
+                          productInput.map((item, index) => {
+                            return (
+                              <tr className={"bg-gray-50  dark:bg-[#20304c]"}>
+                                <td className="whitespace-nowrap pl-4 text-sm py-2 font-medium text-gray-900 dark:text-gray-300">
+                                  <select
+                                    id="name"
+                                    name="name"
+                                    required
+                                    className="block w-full px-6 text-[#6e6e6e] rounded-md dark:text-gray-300 border border-[#f0f1f5] dark:bg-[#20304c] focus:border-orange transition duration-300 focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
+                                    onChange={(e) => {
+                                      handleProduct(index, e);
+                                    }}
+                                  >
+                                    <option selected disabled>
+                                      Select..
+                                    </option>
+                                    {ProductList?.length > 0 &&
+                                      ProductList?.map((item) => {
+                                        const value = `${item._id},${item.name}`;
+                                        return (
+                                          <option name="name" value={value}>
+                                            {item.name}
+                                          </option>
+                                        );
+                                      })}
+                                  </select>
+                                </td>
+                                <td className="whitespace-nowrap w-full flex justify-end text-right py-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                  <input
+                                    id="qty"
+                                    name="qty"
+                                    type="number"
+                                    required
+                                    className="block text-[#6e6e6e] w-20 dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
+                                    onChange={(e) => {
+                                      handleProduct(index, e);
+                                    }}
+                                  />
+                                </td>
+                                <td className="whitespace-nowrap text-right py-2 pr-4 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                  {item.price}
+                                </td>
+                                <td className="whitespace-nowrap text-right py-2 pr-4 text-sm font-bold text-gray-900 dark:text-gray-300">
+                                  {formatCurrency(item?.amount, "INR")}
+                                </td>
+                              </tr>
+                            );
+                          })}
                       </tbody>
                     </table>
                   </div>
                 </div>
-              }
+              )}
             </div>
             {/* Credit Sale */}
-
             <div className="mt-8 bg-white dark:bg-[#0c1a32] rounded-md shadow-sm flow-root">
               <div className="flex gap-3">
                 <label className="block leading-6 text-lg font-bold text-gray-900">
@@ -649,7 +690,7 @@ const Collection = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCreditInput([...creditInput, {}])}
+                  onClick={() => setCreditInput([...creditInput, {amount :'0'}])}
                   className="text-[20px] text-blue-500 hover:text-blue-700 trnasition ease-in duration-300  outline-none"
                 >
                   <MdAddCircleOutline />
@@ -793,6 +834,18 @@ const Collection = () => {
                                 <td className="whitespace-nowrap py-2 text-center pr-4 text-sm font-bold text-gray-900 dark:text-gray-300">
                                   {formatCurrency(party?.amount, "INR") || 0}
                                 </td>
+                                <td className="whitespace-nowrap w-32 pr-3 text-center pl-4 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                  <input
+                                    id="chno"
+                                    name="chno"
+                                    type="text"
+                                    required
+                                    onChange={(e) => {
+                                      handleCedit(index, e);
+                                    }}
+                                    className="block text-[#6e6e6e] w-32 dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
+                                  />
+                                </td>
                               </tr>
                             );
                           })}
@@ -802,6 +855,14 @@ const Collection = () => {
                 </div>
               )}
             </div>
+            {/* Collection Summary */}
+            <CollectionSummary
+              TotalCollection={TotalCollection}
+              CreditSum={credittSum.creditParty.TotalCreditPartyAmount}
+              productSum={productSum.product.ProductSaleAmount}
+              collection={collection}
+              setCollection={setCollection}
+            />
             {/* Save Button */}
             <div className="w-full mt-12 flex gap-4">
               <button

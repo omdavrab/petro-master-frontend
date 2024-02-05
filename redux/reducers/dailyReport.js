@@ -1,6 +1,7 @@
 const initialState = {
   report: {},
   reportlist: [],
+  datewishreportlist: [],
   error: {},
 };
 
@@ -15,6 +16,11 @@ export const Report = (state = initialState, action) => {
       return {
         ...state,
         reportlist: action.payload,
+      };
+      case "DATE_REPORT":
+      return {
+        ...state,
+        datewishreportlist: action.payload,
       };
     case "SET_LOADING":
       return { ...state, error: action?.payload?.response };
