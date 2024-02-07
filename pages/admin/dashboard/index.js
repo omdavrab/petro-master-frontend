@@ -35,6 +35,11 @@ const Dashboard = () => {
     }
   };
 
+  let totalSale;
+  const HandleSum = ()=>{
+
+  }
+
   return (
     <div>
       <h4 className="px-6 sm:px-10 text-[24px] dark:text-white font-medium text-gray-900">
@@ -65,11 +70,11 @@ const Dashboard = () => {
               Object.keys(report)?.map((shiftName) => {
                 return (
                   <div>
-                    <div className="flex justify-between p-3">
-                      <h3>Date: {inputDate}</h3>
-                      <h3>Shift: {shiftName}</h3>
-                      <h3>MS Rate : {Rate?.msRate}</h3>
-                      <h3>HSD Rate: {Rate?.hsdRate}</h3>
+                    <div className="flex justify-between p-3 px-10 bg-[#a9a9a92e]">
+                      <h3 className="text-[14px] font-semibold">Date: {inputDate}</h3>
+                      <h3 className="text-[14px] font-semibold">Shift: {shiftName}</h3>
+                      <h3 className="text-[14px] font-semibold">MS Rate : {Rate?.msRate}</h3>
+                      <h3 className="text-[14px] font-semibold">HSD Rate: {Rate?.hsdRate}</h3>
                     </div>
                     <table className="min-w-full divide-y border dark:border-gray-600 border-gray-300">
                       <thead>
@@ -173,8 +178,9 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="dark:bg-[#0c1a32] bg-white">
-                        {report[shiftName].map((row, index) => (
-                          <React.Fragment key={index}>
+                        {report[shiftName].map((row, index) => {
+                          return(
+                            <React.Fragment key={index}>
                             <tr>
                               <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
                                 {row.nozzle1.nozzle}
@@ -276,7 +282,49 @@ const Dashboard = () => {
                               </td>
                             </tr>
                           </React.Fragment>
-                        ))}
+                          )
+                        })}
+                        <tr>
+                          <td
+                            colSpan={5}
+                            className="whitespace-nowrap item-center px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border"
+                          >
+                            Total
+                          </td>
+                          <td
+                            colSpan={2}
+                            className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border"
+                          >
+                            0000
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
+                            1111
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
+                            2222
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
+                            333
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
+                            Total
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
+                            44
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
+                            555
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
+                            00
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
+                            0000
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
+                            0000
+                          </td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>

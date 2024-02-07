@@ -18,17 +18,16 @@ const machineType = ["MDU", "DU"];
 export default function AddMachine({ view, setView, editEmployee }) {
   const dispatch = useDispatch();
   const [inputFields, setInputFields] = useState([]);
+  console.log("🚀 ~ AddMachine ~ inputFields:", inputFields);
+  const userData = useSelector((state) => state.LogIn?.user?.user);
   const TankList = useSelector((state) => state?.Tank?.tanklist?.data);
+  const [inputValue, setInputValue] = useState({});
+  console.log("🚀 ~ AddMachine ~ inputValue:", inputValue);
 
   const initialValues = {
     name: editEmployee ? editEmployee.name : "",
     type: editEmployee ? editEmployee.type : "",
   };
-
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Tank Name is required"),
-    type: Yup.string().required("Tank Type is required"),
-  });
 
   useEffect(() => {
     setInputFields(editEmployee?.nozzles);
@@ -38,14 +37,37 @@ export default function AddMachine({ view, setView, editEmployee }) {
     dispatch(GetTank(1));
   }, []);
 
-  const HandleData = async (values) => {
+  const HandleData = async () => {
+    inputValue.userId = userData._id;
+    inputValue.nozzles = inputFields;
+    let result;
+    if (inputValue.type === "MDU") {
+      const group1Nozzles = inputFields.slice(0, 2);
+      const group2Nozzles = inputFields.slice(2, 4);
+
+      const group1Obj = {
+        name: inputValue.group1,
+        type: inputValue.type,
+        userId: userData._id,
+        nozzles: group1Nozzles,
+      };
+
+      const group2Obj = {
+        name: inputValue.group2,
+        type: inputValue.type,
+        userId: userData._id,
+        nozzles: group2Nozzles,
+      };
+      result = [group1Obj, group2Obj];
+    } else {
+      result = [inputValue];
+    }
     try {
       dispatch(OpenLoader(true));
-      values.nozzles = inputFields;
       await dispatch(
         editEmployee?._id
-          ? HandleEditMachine(editEmployee._id, values)
-          : HandleCreateMachine(values)
+          ? HandleEditMachine(editEmployee._id, inputValue)
+          : HandleCreateMachine(result)
       )
         .then(async (result) => {
           if (
@@ -81,9 +103,9 @@ export default function AddMachine({ view, setView, editEmployee }) {
 
   const HandleNozzle = async (value) => {
     console.log(value);
-    if (value.type === "DU") {
+    if (value === "DU") {
       setInputFields(editEmployee?.nozzles || [{}, {}]);
-    } else if (value.type === "MDU") {
+    } else if (value === "MDU") {
       setInputFields(editEmployee?.nozzles || [{}, {}, {}, {}]);
     }
   };
@@ -99,6 +121,13 @@ export default function AddMachine({ view, setView, editEmployee }) {
       list[index]["nozzle"] = value;
     }
     setInputFields(list);
+  };
+
+  const HandleInputFiled = (event) => {
+    setInputValue({ ...inputValue, [event.target.name]: event.target.value });
+    if (event.target.name === "type") {
+      HandleNozzle(event.target.value)
+    }
   };
 
   return (
@@ -159,18 +188,10 @@ export default function AddMachine({ view, setView, editEmployee }) {
                         <div className=" w-full ">
                           <Formik
                             initialValues={initialValues}
-                            validationSchema={validationSchema}
                             enableReinitialize={true}
                             onSubmit={(values) => HandleData(values)}
                           >
                             {(formik) => {
-                              React.useEffect(() => {
-                                HandleNozzle(formik.values);
-                                if (!formik.values.type) {
-                                  setInputFields([]);
-                                }
-                              }, [formik.values]);
-
                               return (
                                 <Form className=" mt-10 lg:mt-0 flex-auto mr-[25px] ml-[25px] sm:mr-[50px] sm:ml-[50px] lg:ml-[75px] py-10">
                                   <div>
@@ -183,20 +204,16 @@ export default function AddMachine({ view, setView, editEmployee }) {
                                           Name
                                         </label>
                                         <div className="mt-1">
-                                          <Field
+                                          <input
                                             id="name"
                                             name="name"
                                             type="name"
                                             placeholder="Enter Machine Name"
                                             className="block bg-white text-[#090415] w-full h-[48px] appearance-none rounded-lg border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
+                                            onChange={(event) =>
+                                              HandleInputFiled(event)
+                                            }
                                           />
-                                          <div style={{ color: "red" }}>
-                                            <ErrorMessage
-                                              name="name"
-                                              component="span"
-                                              className="error text-[13px] font-medium leanding-[20px] text-red500"
-                                            />
-                                          </div>
                                         </div>
                                       </div>
                                       <div>
@@ -207,11 +224,14 @@ export default function AddMachine({ view, setView, editEmployee }) {
                                           Machine Type
                                         </label>
                                         <div className="mt-1">
-                                          <Field
+                                          <select
                                             as="select"
                                             id="type"
                                             name="type"
                                             className="block bg-white text-[#090415] w-full h-[48px] appearance-none rounded-lg border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
+                                            onChange={(event) =>
+                                              HandleInputFiled(event)
+                                            }
                                           >
                                             <option value="" disabled selected>
                                               Please select Machine Type
@@ -222,14 +242,7 @@ export default function AddMachine({ view, setView, editEmployee }) {
                                                   {item}
                                                 </option>
                                               ))}
-                                          </Field>
-                                          <div style={{ color: "red" }}>
-                                            <ErrorMessage
-                                              name="type"
-                                              component="span"
-                                              className="error text-[13px] font-medium leanding-[20px] text-red500"
-                                            />
-                                          </div>
+                                          </select>
                                         </div>
                                       </div>
                                       {inputFields?.length > 0 &&
@@ -271,7 +284,7 @@ export default function AddMachine({ view, setView, editEmployee }) {
                                                     as="select"
                                                     id={`tankName${index + 1}`}
                                                     name="tank"
-                                                    value={item.tank}
+                                                    // value={item.tank}
                                                     className="block bg-white text-[#090415] w-full h-[48px] appearance-none rounded-lg border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
                                                     onChange={(evnt) =>
                                                       handleChange(index, evnt)
@@ -315,14 +328,55 @@ export default function AddMachine({ view, setView, editEmployee }) {
                                             </>
                                           );
                                         })}
+                                      {inputValue.type === "MDU" && (
+                                        <>
+                                          <div>
+                                            <label
+                                              htmlFor="group1"
+                                              className="block text-[13px] font-medium text-gray-700"
+                                            >
+                                              Group 1
+                                            </label>
+                                            <div className="mt-1">
+                                              <input
+                                                id="group1"
+                                                name="group1"
+                                                type="name"
+                                                placeholder="Group name (Nozzle 1 and 2)"
+                                                className="block bg-white text-[#090415] w-full h-[48px] appearance-none rounded-lg border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
+                                                onChange={(event) =>
+                                                  HandleInputFiled(event)
+                                                }
+                                              />
+                                            </div>
+                                          </div>
+                                          <div>
+                                            <label
+                                              htmlFor="group2"
+                                              className="block text-[13px] font-medium text-gray-700"
+                                            >
+                                              Group 2
+                                            </label>
+                                            <div className="mt-1">
+                                              <input
+                                                id="group2"
+                                                name="group2"
+                                                type="name"
+                                                placeholder="Group name (Nozzle 3 and 4)"
+                                                className="block bg-white text-[#090415] w-full h-[48px] appearance-none rounded-lg border border-slate-300 px-3 py-2 placeholder-gray-400 placeholder:italic focus:border-slate-300 focus:outline-none focus:ring-slate-300 sm:text-[15px] font-medium"
+                                                onChange={(event) =>
+                                                  HandleInputFiled(event)
+                                                }
+                                              />
+                                            </div>
+                                          </div>
+                                        </>
+                                      )}
                                     </div>
                                   </div>
                                   <div className="space-y-3 sm:space-x-[30px] mt-9 md:mt-[60px]">
                                     <button
                                       type="submit"
-                                      // disabled={
-                                      //   !(formik.isValid && formik.dirty)
-                                      // }
                                       className={`bg-orange shadow-blue100  w-full sm:w-auto block sm:inline-block  focus:outline-none rounded-[4px] sm:rounded-lg py-3 px-[30px] font-semibold text-[15px] leading-[22px] text-white  `}
                                     >
                                       Save
