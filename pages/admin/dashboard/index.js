@@ -1,9 +1,12 @@
 import { GetDateReport } from "@/redux/action/dailyReport";
 import { CloseLoader, OpenLoader } from "@/redux/action/loader";
 import { HandleDateRate } from "@/redux/action/rate";
+import { formatCurrency } from "@/utils/formatCurrency";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+let TotalSale = 0;
+let TotalAmount = 0;
 const Dashboard = () => {
   const dispatch = useDispatch();
   const DateWishReport = useSelector(
@@ -36,9 +39,7 @@ const Dashboard = () => {
   };
 
   let totalSale;
-  const HandleSum = ()=>{
-
-  }
+  const HandleSum = () => {};
 
   return (
     <div>
@@ -68,13 +69,32 @@ const Dashboard = () => {
           <div className="inline-block min-w-full pt-2 align-middle sm:px-6 lg:px-8">
             {Object.keys(report) &&
               Object.keys(report)?.map((shiftName) => {
+                let nozzle1 = 0;
+                let nozzle2 = 0;
+                let amount1 = 0;
+                let amount2 = 0;
+                let onlinepayment = 0;
+                let cash = 0;
+                let coine = 0
+                let different = 0;
+                let productSale = 0;
+                let credit = 0;
+
                 return (
                   <div>
                     <div className="flex justify-between p-3 px-10 bg-[#a9a9a92e]">
-                      <h3 className="text-[14px] font-semibold">Date: {inputDate}</h3>
-                      <h3 className="text-[14px] font-semibold">Shift: {shiftName}</h3>
-                      <h3 className="text-[14px] font-semibold">MS Rate : {Rate?.msRate}</h3>
-                      <h3 className="text-[14px] font-semibold">HSD Rate: {Rate?.hsdRate}</h3>
+                      <h3 className="text-[14px] font-semibold">
+                        Date: {inputDate}
+                      </h3>
+                      <h3 className="text-[14px] font-semibold">
+                        Shift: {shiftName}
+                      </h3>
+                      <h3 className="text-[14px] font-semibold">
+                        MS Rate : {Rate?.msRate}
+                      </h3>
+                      <h3 className="text-[14px] font-semibold">
+                        HSD Rate: {Rate?.hsdRate}
+                      </h3>
                     </div>
                     <table className="min-w-full divide-y border dark:border-gray-600 border-gray-300">
                       <thead>
@@ -179,110 +199,123 @@ const Dashboard = () => {
                       </thead>
                       <tbody className="dark:bg-[#0c1a32] bg-white">
                         {report[shiftName].map((row, index) => {
-                          return(
+                          nozzle1 += row.nozzle1.totalSale;
+                          nozzle2 += row.nozzle2.totalSale;
+                          amount1 += row.nozzle1.amount;
+                          amount2 += row.nozzle2.amount;
+                          onlinepayment += row.totalOnlinePayment
+                          cash += row.totalcash
+                          coine += row.coine
+                          different += row.totalDifferent
+                          productSale += row.totalProductSale
+                          credit += row.totalCreditSale
+
+                          TotalSale = nozzle1 + nozzle2;
+                          TotalAmount = amount1 + amount2;
+                          return (
                             <React.Fragment key={index}>
-                            <tr>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle1.nozzle}
-                              </td>
-                              <td
-                                className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border"
-                                rowSpan={2}
-                              >
-                                {row.employee.name}
-                              </td>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle1.opening}
-                              </td>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle1.testing}
-                              </td>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle1.closing}
-                              </td>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle1.totalSale}
-                              </td>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle1.rate}
-                              </td>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle1.amount}
-                              </td>
-                              <td
-                                rowSpan={2}
-                                className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border"
-                              >
-                                {row.totalOnlinePayment}
-                              </td>
-                              <td
-                                rowSpan={2}
-                                className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900 border"
-                              >
-                                {row.icic}
-                              </td>
-                              <td
-                                rowSpan={2}
-                                className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900 border"
-                              >
-                                {row.totalcash}
-                              </td>
-                              <td
-                                rowSpan={2}
-                                className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900 border"
-                              >
-                                {row.coine}
-                              </td>
-                              <td
-                                rowSpan={2}
-                                className="px-3 py-3.5 dark:text-white text-sm font-semibold text-gray-900 border"
-                              >
-                                {row.totalCreditSale}
-                              </td>
-                              <td
-                                rowSpan={2}
-                                className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900 border"
-                              >
-                                {row.totalDifferent}
-                              </td>
-                              <td
-                                rowSpan={2}
-                                className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900 border"
-                              >
-                                {row.totalProductSale}
-                              </td>
-                              <td
-                                rowSpan={2}
-                                className="px-3 py-3.5 dark:text-white text-right text-sm font-semibold text-gray-900 border"
-                              >
-                                {row.upda}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle2.nozzle}
-                              </td>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle2.opening}
-                              </td>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle2.testing}
-                              </td>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle2.closing}
-                              </td>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle2.totalSale}
-                              </td>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle2.rate}
-                              </td>
-                              <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
-                                {row.nozzle2.amount}
-                              </td>
-                            </tr>
-                          </React.Fragment>
-                          )
+                              <tr>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle1.nozzle}
+                                </td>
+                                <td
+                                  className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border"
+                                  rowSpan={2}
+                                >
+                                  {row.employee.name}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle1.opening}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle1.testing}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle1.closing}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle1.totalSale}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle1.rate}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle1.amount}
+                                </td>
+                                <td
+                                  rowSpan={2}
+                                  className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border"
+                                >
+                                  {row.totalOnlinePayment}
+                                </td>
+                                <td
+                                  rowSpan={2}
+                                  className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900 border"
+                                >
+                                  {row.icic}
+                                </td>
+                                <td
+                                  rowSpan={2}
+                                  className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900 border"
+                                >
+                                  {row.cash}
+                                </td>
+                                <td
+                                  rowSpan={2}
+                                  className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900 border"
+                                >
+                                  {row.coine}
+                                </td>
+                                <td
+                                  rowSpan={2}
+                                  className="px-3 py-3.5 dark:text-white text-sm font-semibold text-gray-900 border"
+                                >
+                                  {row.totalCreditSale}
+                                </td>
+                                <td
+                                  rowSpan={2}
+                                  className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900 border"
+                                >
+                                  {row.totalDifferent}
+                                </td>
+                                <td
+                                  rowSpan={2}
+                                  className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900 border"
+                                >
+                                  {row.totalProductSale}
+                                </td>
+                                <td
+                                  rowSpan={2}
+                                  className="px-3 py-3.5 dark:text-white text-right text-sm font-semibold text-gray-900 border"
+                                >
+                                  {row.upda}
+                                </td>
+                              </tr>
+                              <tr className="border-b-[2.5px]">
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle2.nozzle}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle2.opening}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle2.testing}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle2.closing}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle2.totalSale}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle2.rate}
+                                </td>
+                                <td className="whitespace-nowrap px-2 py-2 text-sm text-gray-500 dark:text-gray-300 border">
+                                  {row.nozzle2.amount}
+                                </td>
+                              </tr>
+                            </React.Fragment>
+                          );
                         })}
                         <tr>
                           <td
@@ -295,31 +328,31 @@ const Dashboard = () => {
                             colSpan={2}
                             className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border"
                           >
-                            0000
+                            {formatCurrency(TotalSale)}
                           </td>
                           <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
-                            1111
+                            {formatCurrency(TotalAmount)}
                           </td>
                           <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
-                            2222
+                            {formatCurrency(onlinepayment)}
                           </td>
                           <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
-                            333
+                            {formatCurrency(0)}
                           </td>
                           <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
-                            Total
+                          {formatCurrency(cash)}
                           </td>
                           <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
-                            44
+                          {formatCurrency(coine)}
                           </td>
                           <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
-                            555
+                          {formatCurrency(credit)}
                           </td>
                           <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
-                            00
+                          {formatCurrency(different)}
                           </td>
                           <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
-                            0000
+                          {formatCurrency(productSale)}
                           </td>
                           <td className="whitespace-nowrap px-2 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 border">
                             0000
