@@ -9,6 +9,7 @@ import Restaurant from "@/components/admin/setting/restaurant";
 
 const Setting = () => {
   const dispatch = useDispatch();
+  const userData = useSelector((state) => state.LogIn?.user?.user);
   const [selectedtab, setSelectedTab] = useState(1);
 
   return (
@@ -21,7 +22,7 @@ const Setting = () => {
             setSelectedTab={setSelectedTab}
           />
         </div>
-        {selectedtab === 1 ? <Profile /> : <Restaurant />}
+        {selectedtab === 1 ? <Profile userData={userData}/> : <Restaurant userData={userData}/>}
       </div>
     </div>
   );

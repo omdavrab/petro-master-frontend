@@ -2,11 +2,14 @@ import Pagination from "@/components/Pagination/Pagination";
 import AddCreditParty from "@/components/admin/AddCreditParty";
 import AddRate from "@/components/admin/AddRate";
 import NoData from "@/components/admin/NoData";
+import NozzleView from "@/components/admin/NozzleView";
+import VehicleView from "@/components/admin/VehicleView";
 import { GetCreditParty } from "@/redux/action/credit";
 import { GetRate } from "@/redux/action/rate";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
 import { FaRegEdit } from "react-icons/fa";
+import { GrView } from "react-icons/gr";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -16,6 +19,8 @@ const Credit = () => {
   const PartytList = useSelector((state) => state?.Party?.partylist);
   const [editRate, setEditRate] = useState();
   const [customersData, setCustomersData] = useState({});
+  const [nozzleView, setNozzleView] = useState(false);
+  console.log("🚀 ~ Credit ~ customersData:", customersData);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -38,6 +43,7 @@ const Credit = () => {
         Add Credit Party
       </button>
       <AddCreditParty setView={setOpen} view={open} editEmployee={editRate} />
+      <VehicleView open={nozzleView} setOpen={setNozzleView} data={editRate} />
       {customersData?.data?.length > 0 ? (
         <div className="px-6 sm:px-10">
           <div>
@@ -61,19 +67,25 @@ const Credit = () => {
                         scope="col"
                         className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
                       >
-                        Date
+                        Name
                       </th>
                       <th
                         scope="col"
                         className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
                       >
-                        MS Rate
+                        Phone Number
                       </th>
                       <th
                         scope="col"
                         className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
                       >
-                        HSD Rate
+                        Address
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
+                      >
+                        vehicle
                       </th>
                       <th
                         scope="col"
@@ -97,14 +109,25 @@ const Credit = () => {
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-300 sm:pl-3">
                             {index + 1}
                           </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-700 dark:text-gray-300">
-                            {moment(item.date).format("DD/MM/yyyy")}
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                            {item.name}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {item.msRate}
+                            {item.phone}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {item.hsdRate}
+                            {item.address}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                            <button
+                              onClick={() => {
+                                setEditRate(item);
+                                setNozzleView(true);
+                              }}
+                              className="hover:text-red-700 mr-2.5 text-orange trnasition duration-200 ease-in outline-none focus:outline-none"
+                            >
+                              <GrView className="text-[18px]" />
+                            </button>
                           </td>
                           <td className="relative whitespace-nowrap max-w-[80px] pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
                             <button

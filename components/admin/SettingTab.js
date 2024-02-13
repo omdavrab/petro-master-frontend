@@ -3,7 +3,7 @@ import { faStore, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 const tabs = [
     { id: 1, name: 'My Account', icon: faUser },
-    { id: 2, name: 'Restaurant Detail', icon: faStore },
+    { id: 2, name: 'Petro Master', icon: faStore },
     // { name: 'Team Members', icon: UsersIcon},
     // { name: 'Billing',  icon: CreditCardIcon },
 ]

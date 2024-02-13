@@ -3,8 +3,7 @@ import { useSelector } from "react-redux";
 import { AiFillCamera } from "react-icons/ai";
 import { HiOutlineUpload } from "react-icons/hi";
 
-export default function Profile() {
-  const userData = useSelector((state) => state.LogIn?.user?.user);
+export default function Profile({userData}) {
   const [profilePicture, setProfilePicture] = useState();
   const [UserData, serUserData] = useState({});
   useEffect(() => {

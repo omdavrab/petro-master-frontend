@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import * as Yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,6 +11,8 @@ import {
   HandleCreateCreditParty,
   HandleEditCreditParty,
 } from "@/redux/action/credit";
+import { TbTrash } from "react-icons/tb";
+import { MdAddCircleOutline } from "react-icons/md";
 
 export default function AddCreditParty({ view, setView, editEmployee }) {
   const dispatch = useDispatch();
@@ -26,6 +28,14 @@ export default function AddCreditParty({ view, setView, editEmployee }) {
     phone: Yup.string().required("Phone Number is required"),
     address: Yup.string().required("Address is required"),
   });
+
+  useEffect(() => {
+    if (editEmployee?._id) {
+      setVehicle(editEmployee?.vehicle);
+    }else{
+      setVehicle([{}]);
+    }
+  }, [editEmployee]);
 
   const HandleAdd = () => {
     setVehicle([...vehicle, {}]);
@@ -44,7 +54,7 @@ export default function AddCreditParty({ view, setView, editEmployee }) {
   const HandleData = async (values) => {
     try {
       dispatch(OpenLoader(true));
-      values.vehicle = vehicle
+      values.vehicle = vehicle;
       await dispatch(
         editEmployee?._id
           ? HandleEditCreditParty(editEmployee._id, values)
@@ -214,7 +224,7 @@ export default function AddCreditParty({ view, setView, editEmployee }) {
                                         Vehicle Details*
                                       </h3>
                                     </div>
-                                    {vehicle.map((item, index) => {
+                                    {vehicle?.map((item, index) => {
                                       return (
                                         <div className="flex mt-4 gap-6">
                                           <div>
@@ -235,6 +245,7 @@ export default function AddCreditParty({ view, setView, editEmployee }) {
                                                 onChange={(e) =>
                                                   HandleChange(index, e)
                                                 }
+                                                value={item?.type}
                                               />
                                             </div>
                                           </div>
@@ -256,25 +267,26 @@ export default function AddCreditParty({ view, setView, editEmployee }) {
                                                 onChange={(e) =>
                                                   HandleChange(index, e)
                                                 }
+                                                value={item?.vnumber}
                                               />
                                             </div>
                                           </div>
-                                          <div className="gap-2">
+                                          <div className="gap-4 flex">
                                             <button
-                                              className="mt-8"
+                                              className="mt-6"
                                               type="button"
                                               onClick={HandleAdd}
                                             >
-                                              +
+                                              <MdAddCircleOutline />
                                             </button>
                                             <button
-                                              className="mt-8"
+                                              className="mt-6"
                                               type="button"
                                               onClick={() =>
                                                 HandleRemove(index)
                                               }
                                             >
-                                              -
+                                              <TbTrash />
                                             </button>
                                           </div>
                                         </div>

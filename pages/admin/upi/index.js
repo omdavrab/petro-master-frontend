@@ -1,9 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Pagination from "@/components/Pagination/Pagination";
 import DeletePopup from "@/components/admin/DeletePopup";
 import NoData from "@/components/admin/NoData";
@@ -15,8 +10,7 @@ import { GetUpi } from "@/redux/action/upi";
 
 const Upi = () => {
   const dispatch = useDispatch();
-  const UpiList = useSelector((state) => state?.Upi?.upiList);
-
+  const UpiList = useSelector((state) => state?.Upi?.upilist);
   const [open, setOpen] = useState(false);
   const [customersData, setCustomersData] = useState({});
   const cancelButtonRef = useRef(null);
@@ -43,7 +37,7 @@ const Upi = () => {
       >
         Add New UPI
       </button>
-      <AddUpi view={view} setView={setView} editEmployee={editEmployee} />
+      <AddUpi open={view} setOpen={setView} editEmployee={editEmployee} />
       {customersData?.data?.length > 0 ? (
         <div className="px-6 sm:px-10">
           <div>
@@ -67,31 +61,13 @@ const Upi = () => {
                         scope="col"
                         className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
                       >
-                        Account Number
+                        UPI Machine
                       </th>
                       <th
                         scope="col"
                         className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
                       >
                         Bank Name
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
-                      >
-                        Holder Name
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
-                      >
-                        IFSC Code
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-3 py-3.5 dark:text-white text-left text-sm font-semibold text-gray-900"
-                      >
-                        Phone Number
                       </th>
                       <th
                         scope="col"
@@ -114,22 +90,13 @@ const Upi = () => {
                           }
                         >
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-300 sm:pl-3">
-                            #{index + 1}
+                            {index + 1}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {item?.accountNo}
+                            {item?.name}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {item?.bankName}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {item?.HolderName}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {item.ifcCode}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {item.phone}
+                            {item?.bank}
                           </td>
                           <td className="relative gap-6 whitespace-nowrap max-w-[80px] pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
                             <button

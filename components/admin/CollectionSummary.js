@@ -1,6 +1,10 @@
 import { formatCurrency } from "@/utils/formatCurrency";
 import React, { useEffect, useState } from "react";
 import Coine from "./Coine";
+import PaymentList from "./PaymentList";
+import { faL } from "@fortawesome/free-solid-svg-icons";
+import { GetUpi } from "@/redux/action/upi";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function CollectionSummary({
   CreditSum,
@@ -9,16 +13,53 @@ export default function CollectionSummary({
   setCollection,
   collection,
 }) {
-  const [open, setOpen] = useState(false)
+  const dispatch = useDispatch()
+  const UpiList = useSelector((state) => state?.Upi?.upilist?.data);
+  const [open, setOpen] = useState(false);
+  const [openPayment, setOpenPayment] = useState(false);
+  const [upiList, setUpiList] = useState()
+  
+  useEffect(() => {
+    dispatch(GetUpi('all'));
+  }, []);
 
   useEffect(() => {
-    const TotalDifferent = TotalCollection - collection.totalCash - collection.online - CreditSum
-    setCollection({ ...collection, TotalCollection, productSum, CreditSum , TotalDifferent});
-  }, [TotalCollection, productSum, CreditSum , collection.totalCash, collection.online]);
-  
+    setUpiList(UpiList);
+  }, [UpiList]);
+
+  useEffect(() => {
+    const TotalDifferent =
+      TotalCollection - collection.totalCash - collection.online - CreditSum;
+    setCollection({
+      ...collection,
+      TotalCollection,
+      productSum,
+      CreditSum,
+      TotalDifferent,
+    });
+  }, [
+    TotalCollection,
+    productSum,
+    CreditSum,
+    collection.totalCash,
+    collection.online,
+  ]);
+
   return (
     <div>
-      <Coine open={open} setOpen={setOpen} collection={collection} setCollection={setCollection}/>
+      <Coine
+        open={open}
+        setOpen={setOpen}
+        collection={collection}
+        setCollection={setCollection}
+      />
+      <PaymentList
+        open={openPayment}
+        setOpen={setOpenPayment}
+        collection={collection}
+        setCollection={setCollection}
+        upiList={upiList}
+      />
       <div className="mt-8 bg-white dark:bg-[#0c1a32] rounded-md shadow-sm flow-root">
         <div className="flex gap-3">
           <label className="block leading-6 text-lg font-bold text-gray-900">
@@ -37,7 +78,7 @@ export default function CollectionSummary({
             </div>
           </div>
           <div className="bg-white dark:bg-[#0c1a32] shadow-lg rounded-md p-5">
-            <div onClick={()=>setOpen(true)}>
+            <div onClick={() => setOpen(true)}>
               <label
                 className="dark:text-white/[60%] text-black/[60%]"
                 htmlFor="totalCollection"
@@ -60,22 +101,16 @@ export default function CollectionSummary({
             </div>
           </div>
           <div className="bg-white dark:bg-[#0c1a32] shadow-lg rounded-md p-5">
-            <div>
+            <div onClick={()=>setOpenPayment(true)}>
               <label
                 className="dark:text-white/[60%] text-black/[60%]"
                 htmlFor="onlinepayment"
               >
                 Online Payment
               </label>
-              <input
-                type="number"
-                id="onlinepayment"
-                style={{ boxShadow: "none" }}
-                className="dark:text-white p-0 py-2 text-black/[85%] font-bold text-[21px] border-none outline-none focus:outline-none w-full"
-                onChange={(e) =>
-                  setCollection({ ...collection, online: e.target.value })
-                }
-              />
+              <h2 className="dark:text-white text-black/[85%] font-bold text-[21px]">
+                {formatCurrency(collection.online) || 0}
+              </h2>
             </div>
           </div>
           <div className="bg-white dark:bg-[#0c1a32] flex gap-5 items-start shadow-lg rounded-md p-5">

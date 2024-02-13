@@ -18,6 +18,8 @@ import { RiErrorWarningFill } from "react-icons/ri";
 import { HandleTotalSum } from "@/utils/handleTotal";
 import Image from "next/image";
 import CollectionSummary from "@/components/admin/CollectionSummary";
+import Machine from "@/components/admin/Collection/Machine";
+import Employee from "@/components/admin/Collection/Employee";
 
 const generateDummyData = () => {
   return [
@@ -64,6 +66,15 @@ const Collection = () => {
   const [productInput, setProductInput] = useState([]);
   const [data, setData] = useState(generateDummyData());
   const [collection, setCollection] = useState({ cash: "", online: "" });
+  const [shiftData, setShiftData] = useState([]);
+  const [machineListData, setMachineListData] = useState([]);
+  const [EmployeeListData, setEmployeeListData] = useState([]);
+
+  useEffect(() => {
+    setShiftData(ShiftList);
+    setMachineListData(MachineList);
+    setEmployeeListData(EmployeeList);
+  }, [ShiftList, EmployeeList, MachineList]);
 
   useEffect(() => {
     dispatch(HandleDateRate(input.date)).then((result) => {
@@ -209,8 +220,8 @@ const Collection = () => {
     let totalSale = 0;
     let amount = 0;
     let testing = 0;
-    totalSale = parseInt(data.closing || 0) - parseInt(data.opening || 0);
-    totalSale = totalSale - parseInt(data.testing || 0);
+    totalSale = parseFloat(data.closing || 0) - parseFloat(data.opening || 0);
+    totalSale = totalSale - parseFloat(data.testing || 0);
     amount = parseFloat(data.rate || 0) * totalSale;
     return { totalSale, amount };
   };
@@ -228,14 +239,14 @@ const Collection = () => {
       machine: selectedMachines,
       productSale: productInput,
       creditSale: creditInput,
-      totalCollection : collection.TotalCollection,
-      totalcash : collection.totalCash,
-      cash : collection.cash,
-      coine : collection.coine,
-      totalCreditSale : collection.CreditSum,
-      totalOnlinePayment : collection.online,
-      totalProductSale : collection.productSum,
-      totalDifferent : collection.TotalDifferent
+      totalCollection: collection.TotalCollection,
+      totalcash: collection.totalCash,
+      cash: collection.cash,
+      coine: collection.coine,
+      totalCreditSale: collection.CreditSum,
+      totalOnlinePayment: collection.online,
+      totalProductSale: collection.productSum,
+      totalDifferent: collection.TotalDifferent,
     };
     await dispatch(HandleCreateReport(data))
       .then(async (result) => {
@@ -303,14 +314,14 @@ const Collection = () => {
       list[index]["productId"] = id;
     }
     if (name === "qty") {
-      list[index]["amount"] = list[index].price* list[index].qty;
+      list[index]["amount"] = list[index].price * list[index].qty;
     }
     setProductInput(list);
   };
   const productSum = HandleTotalSum(productInput, "product");
   const credittSum = HandleTotalSum(creditInput, "creditparty");
   const nozzleSum = HandleTotalSum(selectedMachines, "nozzle");
-// TotalCollection
+  // TotalCollection
   const TotalCollection =
     productSum.product.ProductSaleAmount +
     credittSum.creditParty.TotalCreditPartyAmount +
@@ -378,8 +389,8 @@ const Collection = () => {
                       }}
                     >
                       <option name="Shift">Please select Shift</option>
-                      {ShiftList?.length > 0 &&
-                        ShiftList?.map((item) => {
+                      {shiftData?.length > 0 &&
+                        shiftData?.map((item) => {
                           const value = `${item._id},${item.name}`;
                           return (
                             <option name="Shift" value={value}>
@@ -390,68 +401,13 @@ const Collection = () => {
                     </select>
                   </div>
                 </div>
-                <div className="mb-2">
-                  <label
-                    htmlFor="Employee"
-                    className="block text-sm font-medium leading-6 text-gray-900"
-                  >
-                    Employee
-                  </label>
-                  <div className="mt-2">
-                    <select
-                      id="Employee"
-                      name="employeeId"
-                      required
-                      className="block w-full px-6 text-[#6e6e6e] rounded-md dark:text-gray-300 border border-[#f0f1f5] dark:bg-[#20304c] focus:border-orange transition duration-300 focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
-                      onChange={(e) => {
-                        handleData(e);
-                      }}
-                    >
-                      <option name="Employee">Please select Employee</option>
-                      {EmployeeList?.length > 0 &&
-                        EmployeeList?.map((item) => {
-                          const value = `${item._id},${item.name}`;
-                          return (
-                            <option name="Employee" value={value}>
-                              {item.name}
-                            </option>
-                          );
-                        })}
-                    </select>
-                  </div>
-                </div>
+                <Employee handleData={handleData} EmployeeList={EmployeeListData} />
               </div>
               {/* Machine */}
-              <div className="col-span-full">
-                <label
-                  htmlFor="cover-photo"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Machine
-                </label>
-                <div className="mt-2 overflow-y-scroll custom-scroll w-[500px] max-h-[205px] flex rounded-lg border border-dashed border-gray-900/25 px-6 py-4">
-                  <div className="">
-                    {MachineList?.length > 0 &&
-                      MachineList.map((item, index) => (
-                        <div className="flex items-center pb-2">
-                          <input
-                            id={index}
-                            name={`remember-me${index}`}
-                            type="checkbox"
-                            className="h-4 bg-white w-4  rounded-[2.8px] accent-violet600 border-gray-300 text-orange focus:ring-0"
-                            onChange={() => handleCheckboxChange(item)}
-                          />
-                          <label
-                            htmlFor={`remember-me${index}`}
-                            className="ml-2 block font-medium text-sm text-gray800"
-                          >
-                            {item.name}
-                          </label>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
+              <Machine
+                MachineList={machineListData && machineListData}
+                handleCheckboxChange={handleCheckboxChange}
+              />
             </div>
             {/* Nozzle Table */}
             {selectedMachines?.length > 0 && (
@@ -520,6 +476,7 @@ const Collection = () => {
                                   name="opening"
                                   type="number"
                                   required
+                                  step="any"
                                   className="block w-40 text-[#6e6e6e] dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
                                   value={nozzle?.opening || ""}
                                   onChange={(e) => {
@@ -532,6 +489,7 @@ const Collection = () => {
                                   name="testing"
                                   type="number"
                                   // required
+                                  step="any"
                                   className="block w-20 text-[#6e6e6e] dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0 shadow-none rounded-md bg-white"
                                   value={nozzle?.testing}
                                   onChange={(e) => {
@@ -544,6 +502,7 @@ const Collection = () => {
                                   name="closing"
                                   type="number"
                                   required
+                                  step="any"
                                   className="block w-40 text-[#6e6e6e] dark:text-gray-300 dark:bg-[#20304c] border border-[#f0f1f5] focus:border-orange transition focus:outline-none focus:ring-0  shadow-none rounded-md bg-white"
                                   onChange={(e) => {
                                     handleChange(index, e, nozzle);
@@ -583,7 +542,9 @@ const Collection = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setProductInput([...productInput, {amount: '0'}])}
+                  onClick={() =>
+                    setProductInput([...productInput, { amount: "0" }])
+                  }
                   className="text-[20px] text-blue-500 hover:text-blue-700 trnasition ease-in duration-300  outline-none"
                 >
                   <MdAddCircleOutline />
@@ -692,7 +653,9 @@ const Collection = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCreditInput([...creditInput, {amount :'0'}])}
+                  onClick={() =>
+                    setCreditInput([...creditInput, { amount: "0" }])
+                  }
                   className="text-[20px] text-blue-500 hover:text-blue-700 trnasition ease-in duration-300  outline-none"
                 >
                   <MdAddCircleOutline />
@@ -823,6 +786,7 @@ const Collection = () => {
                                     id="qty"
                                     name="qty"
                                     type="number"
+                                    step="any"
                                     required
                                     onChange={(e) => {
                                       handleCedit(index, e);
@@ -842,6 +806,7 @@ const Collection = () => {
                                     name="chno"
                                     type="text"
                                     required
+                                    step="any"
                                     onChange={(e) => {
                                       handleCedit(index, e);
                                     }}
